@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0d">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dep showcase">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kohtalainen Masennus – Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090b;
+    --panel:#111318;
+    --panel-2:#171a20;
+    --rain:#3a4a5c;
+    --warn:#7a2331;
+    --text:#e4e1da;
+    --dim:#83868c;
+    --line:#23262c;
+    --gold:#c9a35a;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Crimson Pro', serif;
+    font-weight:400;
+    letter-spacing:0.01em;
+  }
+  ::selection{background:var(--warn); color:var(--text);}
+
+  /* ---------- ambient rain ---------- */
+  #rain-canvas{
+    position:fixed; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:0; opacity:0.35;
+  }
+
+  /* ---------- screens ---------- */
+  .screen{
+    position:relative;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding:8vh 6vw;
+    z-index:1;
+  }
+  .hidden{display:none !important;}
+
+  /* HOME */
+  #home .age-tag{
+    font-size:0.7rem; letter-spacing:0.15em; color:var(--warn);
+    border:1px solid var(--warn); padding:4px 10px; border-radius:2px;
+    margin-bottom:2.5rem; opacity:0.9;
+  }
+  #home h1{
+    font-size:clamp(2.2rem, 6vw, 4rem);
+    font-style:italic; font-weight:300;
+    color:var(--text);
+    line-height:1.15;
+  }
+  #home .subtitle{
+    margin-top:0.8rem; color:var(--dim); font-size:1rem; letter-spacing:0.04em;
+  }
+  .start-btn{
+    margin-top:4rem;
+    width:120px; height:120px; border-radius:50%;
+    border:1px solid rgba(228,225,218,0.25);
+    background:radial-gradient(circle at 50% 40%, var(--panel-2), var(--bg));
+    color:var(--text); font-family:'Crimson Pro', serif; font-size:1.3rem;
+    letter-spacing:0.08em; cursor:pointer;
+    animation:pulse 3.2s ease-in-out infinite;
+    transition:transform .4s ease, border-color .4s ease;
+  }
+  .start-btn:hover{transform:scale(1.05); border-color:var(--gold);}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(228,225,218,0.06);}
+    50%{box-shadow:0 0 0 18px rgba(228,225,218,0);}
+  }
+  .tap-hint{margin-top:1.1rem; font-size:0.8rem; color:var(--dim); letter-spacing:0.05em;}
+
+  /* WARNING */
+  #warning .warn-box{
+    max-width:560px; border:1px solid var(--warn); border-radius:2px;
+    padding:2.4rem 2rem; background:rgba(122,35,49,0.06);
+  }
+  #warning .warn-box p{font-size:0.95rem; line-height:1.8; color:var(--text); margin-bottom:1rem;}
+  #warning .warn-box p:last-child{margin-bottom:0;}
+  #warning .warn-icon{font-size:1.4rem; color:var(--warn); margin-bottom:1rem;}
+
+  /* generic button */
+  .btn{
+    margin-top:2.6rem;
+    background:none; border:1px solid rgba(228,225,218,0.3);
+    color:var(--text); font-family:'Inter', sans-serif; font-size:0.85rem;
+    letter-spacing:0.12em; padding:0.9rem 2.4rem; cursor:pointer;
+    transition:border-color .3s, background .3s;
+  }
+  .btn:hover{border-color:var(--gold); background:rgba(201,163,90,0.06);}
+
+  /* INTRO SCROLL */
+  #intro{min-height:auto; padding:0;}
+  .intro-line{
+    min-height:70vh; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:4vh 8vw;
+  }
+  .intro-line p{
+    font-family:'Crimson Pro', serif; font-style:italic;
+    font-size:clamp(1.3rem,3.4vw,2rem); color:var(--dim);
+    opacity:0; transform:translateY(14px);
+    transition:opacity 1.1s ease, transform 1.1s ease;
+    max-width:640px; line-height:1.5;
+  }
+  .intro-line p.visible{opacity:1; transform:translateY(0); color:var(--text);}
+
+  /* ROOMS LIST */
+  #rooms{padding:10vh 6vw 16vh; align-items:center;}
+  #rooms h2{font-size:1.6rem; font-style:italic; color:var(--dim); margin-bottom:0.6rem;}
+  #rooms .rooms-sub{color:var(--dim); font-size:0.85rem; margin-bottom:4rem;}
+  .room-list{list-style:none; width:100%; max-width:520px;}
+  .room-item{
+    border-bottom:1px solid var(--line);
+    padding:1.4rem 0.4rem;
+    display:flex; align-items:baseline; justify-content:space-between;
+    cursor:pointer; transition:padding-left .3s, color .3s;
+  }
+  .room-item:hover{padding-left:0.6rem; color:var(--gold);}
+  .room-item .num{font-family:'Crimson Pro', serif; font-style:italic; color:var(--dim); font-size:0.95rem; width:2.4rem; text-align:left;}
+  .room-item .name{flex:1; text-align:left; font-size:1.05rem; letter-spacing:0.01em;}
+  .room-item.done .name{color:var(--dim);}
+  .room-item .mark{font-size:0.75rem; color:var(--dim);}
+
+  /* SCENE OVERLAY */
+  #scene-overlay{
+    position:fixed; inset:0; background:#000; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .6s ease;
+  }
+  #scene-overlay.active{opacity:1; pointer-events:all;}
+  .scene-label{
+    position:absolute; top:6vh; left:0; right:0; text-align:center;
+    font-family:'Crimson Pro', serif; font-style:italic; color:var(--dim);
+    font-size:1rem; letter-spacing:0.06em; opacity:0.8;
+    z-index:2;
+  }
+  .scene-visual{
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    display:flex; align-items:center; justify-content:center;
+    z-index:0; pointer-events:none;
+  }
+  .scene-visual svg{
+    width:min(88vw, 760px); height:auto; max-height:56vh;
+    opacity:0.9;
+  }
+  .scene-visual [data-show]{ opacity:0; transition:opacity .8s ease; }
+  .scene-beat{
+    position:relative; z-index:2;
+    max-width:640px; padding:0 6vw; text-align:center;
+    font-size:clamp(1.1rem,3vw,1.6rem); line-height:1.6;
+    opacity:0; transition:opacity .9s ease;
+    background:linear-gradient(180deg, rgba(8,9,11,0) 0%, rgba(8,9,11,0.55) 30%, rgba(8,9,11,0.55) 70%, rgba(8,9,11,0) 100%);
+    padding-top:2rem; padding-bottom:2rem;
+  }
+  .scene-beat.visible{opacity:1;}
+  .scene-beat .stage{color:var(--dim); font-style:italic; font-family:'Crimson Pro', serif;}
+  .scene-beat .sfx{
+    display:block; margin-top:0.6rem; font-size:0.75rem; letter-spacing:0.12em;
+    color:var(--rain); text-transform:uppercase;
+  }
+  .flash{
+    position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:60;
+    transition:opacity .06s ease;
+  }
+  .flash.on{opacity:0.9;}
+  .scene-nav{
+    position:absolute; bottom:6vh; left:0; right:0; text-align:center;
+  }
+  .scene-next{
+    background:none; border:1px solid rgba(228,225,218,0.35); color:var(--text);
+    font-size:0.8rem; letter-spacing:0.14em; padding:0.8rem 2.2rem; cursor:pointer;
+  }
+  .scene-next:hover{border-color:var(--gold);}
+  .scene-return{
+    position:absolute; top:6vh; right:6vw; background:none; border:none;
+    color:var(--dim); font-size:0.75rem; letter-spacing:0.08em; cursor:pointer;
+  }
+  .scene-return:hover{color:var(--text);}
+
+  /* ENDING */
+  #ending{background:#000;}
+  #ending .display{
+    font-size:clamp(1.6rem,4vw,2.6rem); font-style:italic; color:var(--text);
+    max-width:640px; line-height:1.6; margin-bottom:3rem;
+  }
+  #ending .credits{color:var(--dim); font-size:0.85rem; line-height:2.1; margin-bottom:3rem;}
+  #ending .credits b{color:var(--text); font-weight:400;}
+  #ending .help-box{
+    max-width:620px; border-top:1px solid var(--line); padding-top:2.4rem;
+    font-size:0.95rem; line-height:1.9; color:var(--text);
+  }
+  #ending .help-box .stat{color:var(--gold);}
+  .resources{
+    margin-top:1.6rem; font-size:0.8rem; color:var(--dim); line-height:2;
+  }
+  .resources a{color:var(--rain); text-decoration:none; border-bottom:1px solid var(--rain);}
+
+  #hud{position:fixed;bottom:14px;right:14px;z-index:70;display:flex;gap:8px}
+  #hud button{background:rgba(0,0,0,.4);border:1px solid rgba(228,225,218,.25);color:var(--text);height:40px;min-width:40px;padding:0 .8rem;border-radius:20px;cursor:pointer;font:400 .72rem Inter,sans-serif;letter-spacing:.1em}
+  #copy{position:fixed;bottom:62px;left:0;right:0;text-align:center;font:400 .62rem Inter,sans-serif;letter-spacing:.12em;color:var(--dim);opacity:.75;z-index:6;pointer-events:none}
+  #toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:95;background:rgba(0,0,0,.7);color:var(--gold);padding:.5rem 1rem;border-radius:20px;font:400 .8rem Inter,sans-serif;opacity:0;transition:opacity .4s;pointer-events:none}#toast.show{opacity:1}
+  #modal{position:fixed;inset:0;z-index:90;background:rgba(3,4,6,.92);display:none;align-items:center;justify-content:center;padding:1.2rem}#modal.on{display:flex}
+  #modal .sheet{max-width:560px;width:100%;max-height:86vh;overflow:auto;background:#0e1014;border:1px solid rgba(228,225,218,.15);padding:1.6rem;border-radius:12px;color:var(--text)}
+  #modal h3{font-family:'Crimson Pro',serif;font-weight:300;font-size:1.6rem;margin-bottom:1rem}#modal ol{padding-left:1.2rem;line-height:1.7}#modal li{margin:.5rem 0}
+  #modal details{border-top:1px solid rgba(228,225,218,.12);padding:.7rem 0}#modal summary{cursor:pointer;color:var(--gold)}#modal p{margin:.5rem 0 0;color:var(--dim);line-height:1.6}#m-x{margin-top:1.2rem}
+  .room-item.found .num::after{content:" ✦";color:var(--gold)}
+  #hook{min-height:1.6em;font-style:italic;color:var(--dim);transition:opacity 1s;margin:.6rem 0 0;letter-spacing:.04em}
+  #start-btn{background-image:linear-gradient(90deg,rgba(201,163,90,.38) calc(var(--p,0)*100%),transparent 0);touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  body::after{transition:background .8s}
+  body.holding::after{background:radial-gradient(ellipse at 50% 40%,transparent 12%,rgba(0,0,0,.96) 100%)}
+  #dots{position:absolute;left:0;right:0;top:calc(24px + env(safe-area-inset-top,0px));display:flex;gap:7px;justify-content:center;z-index:2;pointer-events:none}
+  #dots i{width:6px;height:6px;border-radius:50%;background:var(--dim);opacity:.4;transition:all .4s}#dots i.on{background:var(--gold);opacity:1}
+  #hud,#mute{bottom:calc(14px + env(safe-area-inset-bottom,0px))}#copy{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+  svg [data-show]{transition:opacity .9s cubic-bezier(.4,0,.2,1)}
+  #scene-overlay .scene-visual svg{filter:saturate(calc(1.1 - var(--w,0)*.8)) contrast(calc(1.08 - var(--w,0)*.3)) brightness(calc(1 - var(--w,0)*.14))}
+  #scene-overlay #light{filter:none}
+  #scene-overlay #fog{opacity:calc(.05 + var(--w,0)*.1)}
+  #scene-overlay #grain{inset:-60px;will-change:transform;animation:gr2 .8s steps(4) infinite}
+  @keyframes gr2{0%,100%{transform:translate(0,0)}25%{transform:translate(-38px,22px)}50%{transform:translate(30px,-44px)}75%{transform:translate(-20px,40px)}}
+  .room-item{position:relative;transition:transform .3s cubic-bezier(.22,.61,.36,1),text-shadow .3s}.room-item:hover{transform:translateX(6px)}
+  .room-item::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:calc(var(--w,0)*100%);background:linear-gradient(90deg,transparent,rgba(201,163,90,.5));pointer-events:none}
+  .btn,#start-btn,#hud button,#mute,#lang button{transition:transform .2s cubic-bezier(.22,.61,.36,1),background-color .3s,border-color .3s,color .3s}
+  .btn:active,#start-btn:active,#hud button:active,#mute:active{transform:scale(.96)}
+  :focus-visible{outline:2px solid rgba(201,163,90,.7);outline-offset:3px}
+  #modal.on .sheet{animation:pop .4s cubic-bezier(.22,.61,.36,1)}@keyframes pop{from{transform:translateY(14px) scale(.98);opacity:0}}
+  .scene-beat .stage{text-shadow:0 2px 18px #000,0 0 3px #000}
+  @supports (height:100dvh){.screen{min-height:100dvh}}
+  .lite #grain,.lite #fog{display:none}
+  #lang{position:fixed;top:14px;right:14px;z-index:70;display:flex;gap:2px}
+  #lang button{background:none;border:1px solid transparent;color:var(--dim);font:400 .72rem Inter,sans-serif;letter-spacing:.1em;padding:.35rem .55rem;cursor:pointer}
+  #lang button.on{color:var(--text);border-color:rgba(228,225,218,.3)}
+  #lang button:hover,#lang button:focus-visible{color:var(--gold);outline:none}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at 50% 40%,transparent calc(45% - var(--dp,0)*22%),rgba(0,0,0,calc(.6 + var(--dp,0)*.3)))}
+  #home::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 50% 40% at 50% 42%,rgba(201,163,90,.12),transparent 70%);animation:breathe 7s ease-in-out infinite}
+  @keyframes breathe{50%{opacity:.35}}
+  #home h1{text-shadow:0 0 50px rgba(201,163,90,.22)}
+  .room-item:hover{text-shadow:0 0 18px rgba(201,163,90,.45)}
+  .scene-visual{transition:transform .6s ease-out}
+  .scene-visual svg{filter:drop-shadow(0 0 36px rgba(var(--lc,200,200,200),calc(var(--lk,0)*.28))) saturate(calc(1.15 - var(--w,0)*.8)) contrast(1.08) brightness(calc(1 - var(--w,0)*.2))}
+  .scene-visual{will-change:filter,transform;filter:blur(calc(var(--fog,0)*1px))}
+  #dust{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;mix-blend-mode:screen}
+  .scene-visual svg line[stroke="var(--rain)"]{stroke-dasharray:7 9;animation:rn .7s linear infinite}
+  @keyframes rn{to{stroke-dashoffset:-16}}
+  #mute{position:fixed;bottom:14px;left:14px;z-index:70;background:rgba(0,0,0,.4);border:1px solid rgba(228,225,218,.25);color:var(--text);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1rem}
+  #mute.off{opacity:.45;text-decoration:line-through}
+  .lid{position:absolute;left:0;right:0;top:0;height:0;z-index:1;pointer-events:none;background:linear-gradient(#000 60%,transparent)}
+  .lid.b{top:auto;bottom:0;background:linear-gradient(transparent,#000 40%)}
+  #ghost{position:absolute;bottom:6%;height:46%;left:8%;z-index:2;pointer-events:none;fill:#000;opacity:0}
+  .fx .scene-visual{filter:url(#ca);animation:shk .5s linear}
+  @keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-8px,3px)}40%{transform:translate(7px,-4px)}60%{transform:translate(-5px,2px)}80%{transform:translate(4px,-1px)}}
+  #fog{position:absolute;inset:-20%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.07;background:radial-gradient(ellipse 40% 30% at 30% 60%,#9fb4c8,transparent 70%),radial-gradient(ellipse 45% 25% at 70% 40%,#9fb4c8,transparent 70%);animation:fg 28s ease-in-out infinite alternate}
+  @keyframes fg{to{transform:translate(8%,-4%) scale(1.15)}}
+  #vig{animation:vg 6s ease-in-out infinite}@keyframes vg{50%{opacity:.82}}
+  #light,#vig,#grain{position:absolute;inset:0;pointer-events:none}
+  #light{filter:blur(12px);z-index:1;mix-blend-mode:screen;transition:background .9s ease}
+  #vig{z-index:1;background:radial-gradient(ellipse at 50% 45%,transparent calc(32% - var(--w,0)*20%),rgba(0,0,0,.9) 100%)}
+  #grain{z-index:3;opacity:.09;mix-blend-mode:overlay;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:gr .6s steps(3) infinite}
+  @keyframes gr{0%{background-position:0 0}33%{background-position:-40px 25px}66%{background-position:30px -50px}}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+<style>html{-webkit-text-size-adjust:100%;overscroll-behavior:none}body{-webkit-tap-highlight-color:transparent;overscroll-behavior:none}button{-webkit-appearance:none;appearance:none;font-family:inherit}</style>
+</head>
+<body>
+<noscript><p style="color:#ccc;padding:2rem;font-family:sans-serif">JavaScript is required.</p></noscript>
+
+<canvas id="rain-canvas"></canvas>
+<div class="flash" id="flash"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ca" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="r"/><feOffset in="r" dx="-5" result="r2"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="g"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/><feOffset in="b" dx="5" result="b2"/><feBlend in="r2" in2="g" mode="screen" result="rg"/><feBlend in="rg" in2="b2" mode="screen"/></filter></svg>
+<nav id="lang" aria-label="Language"><button data-l="fi">FI</button><button data-l="en">EN</button><button data-l="sv">SV</button><button data-l="de">DE</button></nav>
+<div id="hud"><button id="tut-btn" aria-label="Tutorial">?</button><button id="faq-btn" data-i="fqT"></button></div>
+<footer id="copy"></footer><div id="toast"></div>
+<div id="modal" role="dialog" aria-modal="true"><div class="sheet"><h3 id="m-t"></h3><div id="m-b"></div><button class="btn" id="m-x"></button></div></div>
+<button id="mute" aria-label="Sound" title="Sound">♪</button>
+
+<!-- HOME -->
+<section class="screen" id="home">
+  <div class="age-tag" data-i="age"></div>
+  <h1 data-i="t"></h1>
+  <p class="subtitle" data-i="sub"></p>
+    <p id="hook" class="subtitle"></p>
+  <button class="start-btn" id="start-btn" data-i="go"></button>
+  <p class="tap-hint" data-i="hint"></p>
+</section>
+
+<!-- WARNING -->
+<section class="screen hidden" id="warning">
+  <div class="warn-box">
+    <div class="warn-icon">⚠</div>
+    <p data-i="w1"></p>
+    <p data-i="w2"></p>
+    <p data-i="w3"></p>
+  </div>
+  <button class="btn" id="warning-continue" data-i="cont"></button>
+</section>
+
+<!-- INTRO SCROLL -->
+<section id="intro">
+  <div class="intro-line"><p data-i="i1"></p></div>
+  <div class="intro-line"><p data-i="i2"></p></div>
+  <div class="intro-line"><p data-i="i3"></p></div>
+  <div class="intro-line"><p data-i="i4"></p></div>
+</section>
+
+<!-- ROOMS -->
+<section class="screen" id="rooms" style="min-height:auto;">
+  <h2 data-i="rt"></h2>
+  <p class="rooms-sub" data-i="rs"></p>
+  <ul class="room-list" id="room-list"></ul>
+</section>
+
+<!-- SCENE OVERLAY -->
+<div id="scene-overlay">
+  <button class="scene-return" id="scene-return" data-i="ret"></button>
+  <div class="scene-label" id="scene-label"></div>
+  <div class="scene-visual" id="scene-visual"></div>
+  <canvas id="dust"></canvas><div id="light"></div><div id="vig"></div><div id="grain"></div><div id="fog"></div><svg id="ghost" viewBox="0 0 60 200" aria-hidden="true"><circle cx="30" cy="26" r="16"/><path d="M6 200Q4 70 30 56Q56 70 54 200Z"/><circle cx="24" cy="24" r="2.2" fill="#fff"/><circle cx="36" cy="24" r="2.2" fill="#fff"/></svg><div id="lid1" class="lid"></div><div id="lid2" class="lid b"></div>
+  <div class="scene-beat" id="scene-beat"></div>
+  <div id="dots"></div>
+  <div class="scene-nav"><button class="scene-next" id="scene-next" data-i="nx"></button></div>
+</div>
+
+<!-- ENDING -->
+<section class="screen hidden" id="ending">
+  <p class="display" id="ending-text"></p>
+  <div class="credits" id="ending-credits" style="opacity:0;"></div>
+  <div class="help-box" id="help-box" style="opacity:0;"></div>
+</section>
+
+<script>
+/* robustness: nothing may throw to the console or stop the show */
+window.onerror=function(){return true;};
+window.addEventListener('unhandledrejection',function(e){try{e.preventDefault();}catch(x){}});
+/* ---------------- rain canvas ---------------- */
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('rain-canvas');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+const drops = Array.from({length:190},()=>{const z=.3+Math.random()*.7;
+  return {x:Math.random()*innerWidth,y:Math.random()*innerHeight,z,len:8+z*30,speed:3+z*13,o:.06+z*.3};});
+function drawRain(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#8fa6c4';
+  drops.forEach(d=>{
+    ctx.globalAlpha=d.o; ctx.lineWidth=.5+d.z*1.2;
+    ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-2*d.z,d.y+d.len); ctx.stroke();
+    d.y+=d.speed; d.x-=.6*d.z;
+    if(d.y>canvas.height){d.y=-30;d.x=Math.random()*canvas.width;}
+  });
+  if(!RM) requestAnimationFrame(drawRain);
+}
+drawRain();
+
+/* ---------------- navigation ---------------- */
+const home = document.getElementById('home');
+const warning = document.getElementById('warning');
+document.getElementById('start-btn').onclick = () => {
+  audioInit(); setAmb(-1);
+  home.classList.add('hidden');
+  warning.classList.remove('hidden');
+};
+document.getElementById('warning-continue').onclick = () => {
+  warning.classList.add('hidden');
+  document.getElementById('intro').scrollIntoView({behavior:'smooth'});
+};
+
+/* fade in intro lines as they scroll into view */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.6});
+document.querySelectorAll('.intro-line p').forEach(p=>io.observe(p));
+
+/* ---------------- room data ---------------- */
+/* beat.stage = stage direction text, beat.line = spoken/mind text, beat.sfx = sound cue label, beat.flash = trigger white flash */
+const rooms = [
+  { title:"Käytävä", beats:[
+    {stage:"Pimeä ruutu."},
+    {stage:"Puinen ovi narahtaen raottuu. Valkoinen valo virtaa sisään pimeyteen.", sfx:"ovi — narina"},
+    {stage:"Varjo astuu sisään. Ovi sulkeutuu sen jäljessä.", sfx:"ovi — pamaus"},
+    {stage:"Olet käytävän toisella puolella. Varjo seisoo paikallaan ja tuijottaa sinua.", sfx:"matala sävel", flash:false},
+  ]},
+  { title:"Olohuone", beats:[
+    {stage:"Pieni sohva, pöytä, televisio, matto. Hiljaista."},
+    {stage:"Istut sohvalla ja katsot ikkunaa."},
+    {stage:"Kova sade. Käännyt takaisin huoneeseen."},
+    {stage:"Valkoiset silmät ilmestyvät pimeään kolmeksi sekunniksi — sitten katoavat.", sfx:"kirskahdus", flash:true},
+  ]},
+  { title:"Keittiö", beats:[
+    {stage:"Keittiön pöytä, uuni, liesi, mikroaaltouuni, jääkaappi, ikkuna."},
+    {stage:"Avaat jääkaapin. Otat ruokaa. Asetat sen pöydälle."},
+    {stage:"Lautaset ruoalle, mikro minuutiksi, odotat."},
+    {stage:"Ajastin piippaa. Otat lautasen pois ja suljet luukun.", sfx:"piip — piip"},
+  ]},
+  { title:"Ruokailuhuone", beats:[
+    {stage:"Pöytä, neljä tuolia, lamppu, ikkunoita."},
+    {stage:"Istut alas lautanen edessäsi. Otat haarukan käteen."},
+    {stage:"Mielesi hiljenee, sitten kovenee. Pitäisikö syödä? Ehkä ei. Ehkä myöhemmin.", sfx:"ylikuormitus — nouseva"},
+    {stage:"Tuijotat ruokaa pitkään."},
+  ]},
+  { title:"Suihku", beats:[
+    {stage:"Suihkun ovi, saippuaa, sauna lasin takana."},
+    {stage:"Vesi virtaa. Peset itseäsi hitaasti."},
+    {stage:"Saunan valo on päällä. Sinusta tuntuu kuin joku tarkkailisi sinua."},
+  ]},
+  { title:"Pieni WC", beats:[
+    {stage:"Vessanpönttö, pesuallas, wc-paperirulla ulottuvillasi."},
+    {stage:"Istut ja tuijotat peiliin."},
+    {stage:"Hetken ajan tunnet olevasi lukittuna pimeään huoneeseen — kukaan ei ole lähellä, vain sateen ääni."},
+    {stage:"Palaat takaisin. Nouset ylös ja avaat hanan.", sfx:"virtaava vesi"},
+  ]},
+  { title:"Makuuhuone", beats:[
+    {stage:"Sänky, matto, kaappi, lamppu joka pysyy sammuksissa."},
+    {stage:"Käyt makuulle ja vedät peiton ylitesi."},
+    {stage:"Uni saapuu."},
+  ]},
+  { title:"Aamu", beats:[
+    {stage:"Heräät, harjaat hampaasi, juot kahvia, syöt jotain pientä."},
+    {stage:"Lähdet ulos kävelylle. Ovi avautuu, sitten sulkeutuu takanasi.", sfx:"ovi"},
+    {stage:"Musta ruutu."},
+    {stage:"Bussipysäkki. Kirkas taivas. Kaunis, tavallinen aamu."},
+  ]},
+  { title:"Bussi", beats:[
+    {stage:"Istuimia, muutama vieras, kaksi ovea. Bussi lähtee kohti rautatieasemaa."},
+    {stage:"Astut ulos. Musta ruutu. Toinen pysäkki."},
+    {stage:"Toinen bussi, tällä kertaa täydempi, ajaa kymmenen minuuttia."},
+    {stage:"Saavut kouluun."},
+  ]},
+  { title:"Koulupäivä", beats:[
+    {stage:"Luokkahuone, kourallinen muita oppilaita."},
+    {stage:"Kaksi tuntia kuluu. Ruokailu. Syöt, ja lopetat."},
+    {stage:"Välitunti. Istut yksin koulun pihalla. Sataa. Kukaan ei ole lähellä.", sfx:"sade"},
+    {stage:"Hetken ajan maailma kapenee: yksin, huomaamattomana, väsyneenä. Sitten, hitaasti, palaat luokkaan.", sfx:"ylikuormitus — hälvenevä"},
+  ]},
+  { title:"Kävely", beats:[
+    {stage:"Koulu päättyy. Lähdet kävelemään kohti kaupunkia."},
+    {stage:"Ruutu tummuu hitaasti. Kolmenkymmenen minuutin kuluttua pysähdyt."},
+    {stage:"Soitat ystävälle ja kerrot rehellisesti, että olet ylikuormittunut."},
+    {stage:"Pitkän kävelyn ja vielä yhden bussimatkan jälkeen saavut kotiin."},
+  ]},
+  { title:"Pimeys", beats:[
+    {stage:"Istut yksin sohvalla pimeässä olohuoneessa. Kukaan ei ole lähellä. On hiljaista."},
+    {stage:"Tuijotat ulos ikkunasta."},
+    {stage:"Kova sade."},
+  ]},
+  { title:"Kaksi puolta", beats:[
+    {stage:"Toinen puoli ruudusta on lämmin ja kirkas — naurua, väriä, keveyttä."},
+    {stage:"Toinen puoli on pimeä ja liikkumaton — raskas, hiljainen, harmaa."},
+    {stage:"Molemmat ovat totta samanaikaisesti."},
+  ]},
+  { title:"Ystävä", beats:[
+    {stage:"Koulussa ystäväsi itkee. Istut hänen vierellään ja lohdutat häntä."},
+    {stage:"Hän katsoo ylös. Huomaat tummat renkaat hänen silmiensä alla."},
+    {stage:"Hetken ajan hän näyttää yhtä väsyneeltä kuin sinä tunnet olevasi."},
+  ]},
+  { title:"Myrsky", beats:[
+    {stage:"Musta ruutu."},
+    {stage:"Myrsky puolivalmiita ajatuksia kulkee mielesi läpi — epäilys, uupumus, toive kadota melusta, ei maailmasta.", sfx:"matala hurina"},
+    {stage:"Se väistyy, niin kuin sää väistyy.", flash:true},
+    {stage:"Äkillinen musta ruutu."},
+  ]},
+];
+
+/* ---------------- 2D scene illustrations (redrawn) ---------------- */
+const GR='<linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232730"/><stop offset="1" stop-color="#0c0d10"/></linearGradient><linearGradient id="gw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1c2028"/><stop offset="1" stop-color="#0e1014"/></linearGradient><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e333e"/><stop offset="1" stop-color="#16191f"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#555c68"/><stop offset=".5" stop-color="#2c313a"/><stop offset="1" stop-color="#1a1d23"/></linearGradient><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#454a56"/><stop offset="1" stop-color="#15171b"/></linearGradient><linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3a4e"/><stop offset="1" stop-color="#0b0e13"/></linearGradient><linearGradient id="gs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2c3d"/><stop offset=".75" stop-color="#8b7a5c"/><stop offset="1" stop-color="#d4b075"/></linearGradient><linearGradient id="gh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a4f2e"/><stop offset="1" stop-color="#241a0f"/></linearGradient>';
+const TXT='<defs><filter id="tx" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3"/><feColorMatrix type="saturate" values="0"/></filter><filter id="st" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .014" numOctaves="4" seed="7"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.15"/></filter><linearGradient id="ao" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".65"/><stop offset=".18" stop-opacity="0"/><stop offset=".82" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".65"/></linearGradient><linearGradient id="hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb4c8" stop-opacity="0"/><stop offset=".5" stop-color="#9fb4c8" stop-opacity=".1"/><stop offset="1" stop-color="#9fb4c8" stop-opacity="0"/></linearGradient></defs><rect y="220" width="800" height="140" fill="url(#hz)" style="mix-blend-mode:screen"/><rect width="800" height="450" filter="url(#st)" style="mix-blend-mode:multiply" opacity=".45"/><rect width="800" height="450" fill="url(#ao)"/><rect width="800" height="450" filter="url(#tx)" style="mix-blend-mode:overlay" opacity=".22"/>';
+const R=(y=310,w='url(#gw)')=>`<rect width="800" height="450" fill="${w}"/><rect y="${y}" width="800" height="${450-y}" fill="url(#gf)"/><rect y="${y-5}" width="800" height="5" fill="#08090b"/>`;
+const WIN=(x,y,w,h)=>`<rect x="${x-7}" y="${y-7}" width="${w+14}" height="${h+14}" fill="#08090b"/><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#gl)"/><path d="M${x+w/2} ${y}v${h}M${x} ${y+h/2}h${w}" stroke="#08090b" stroke-width="4"/>`;
+const FIG=(x,y,s=1,c='url(#gp)')=>`<g transform="translate(${x} ${y}) scale(${s})" fill="${c}"><circle cy="-84" r="17"/><path d="M-27 0q-2-58 27-62 29 4 27 62z"/></g>`;
+const RAIN=(x,y,n,gap,l=60)=>Array.from({length:n},(_,i)=>`<line x1="${x+i*gap}" y1="${y}" x2="${x+i*gap-8}" y2="${y+l}" stroke="var(--rain)" opacity=".7"/>`).join('');
+const roomVisuals = [
+/* 0 Hallway */
+`<svg viewBox="0 0 800 450"><rect width="800" height="450" fill="#0b0c0f"/>
+<polygon points="0,0 800,0 470,150 330,150" fill="#0e1014"/><polygon points="0,0 330,150 330,330 0,450" fill="url(#gw)"/><polygon points="800,0 470,150 470,330 800,450" fill="url(#gw)"/>
+<polygon points="0,450 330,330 470,330 800,450" fill="url(#gf)"/><polygon points="170,450 352,330 448,330 630,450" fill="#3a1820" opacity=".55"/>
+<rect x="330" y="150" width="140" height="180" fill="#0d0f13"/><circle cx="190" cy="190" r="7" fill="var(--gold)" opacity=".8"/><circle cx="610" cy="190" r="7" fill="var(--gold)" opacity=".8"/>
+<g data-show="1"><polygon points="372,330 428,330 600,450 200,450" fill="#fff" opacity=".16"/><rect x="372" y="162" width="56" height="168" fill="#fff"/></g>
+<g data-show="2,3"><rect x="370" y="160" width="60" height="170" fill="url(#gm)"/><circle cx="418" cy="248" r="3" fill="var(--gold)"/><ellipse cx="400" cy="330" rx="30" ry="6" fill="#000" opacity=".5"/>${FIG(400,330,.95,'#030304')}</g></svg>`,
+/* 1 Living Room */
+`<svg viewBox="0 0 800 450">${R(320)}${WIN(80,70,220,150)}<g data-show="2,3">${RAIN(95,75,6,36,50)}</g>
+<ellipse cx="560" cy="385" rx="230" ry="26" fill="#14161b"/>
+<g data-sh><rect x="110" y="270" width="150" height="50" fill="url(#gm)"/><rect x="118" y="205" width="134" height="72" fill="#050608"/></g><rect x="122" y="209" width="126" height="64" fill="var(--rain)" opacity=".3"/>
+<g data-sh><rect x="450" y="215" width="270" height="70" rx="16" fill="url(#gc)"/></g><g data-show="1,2,3">${FIG(590,300,.95)}</g>
+<g data-sh><rect x="440" y="262" width="290" height="72" rx="16" fill="url(#gc)"/><rect x="428" y="238" width="34" height="100" rx="12" fill="url(#gc)"/><rect x="708" y="238" width="34" height="100" rx="12" fill="url(#gc)"/></g>
+<g data-show="3"><circle cx="600" cy="180" r="6" fill="#fff"/><circle cx="630" cy="180" r="6" fill="#fff"/></g></svg>`,
+/* 2 Kitchen */
+`<svg viewBox="0 0 800 450">${R(320)}${WIN(380,70,130,100)}
+<g data-sh><rect x="70" y="110" width="150" height="270" rx="6" fill="url(#gm)"/></g>
+<g data-show="1"><rect x="78" y="125" width="135" height="245" fill="#c6d4dc" opacity=".55"/><path d="M78 200h135M78 270h135" stroke="#000" opacity=".4"/></g>
+<g data-sh><rect x="300" y="250" width="440" height="75" fill="url(#gc)"/><rect x="292" y="240" width="456" height="14" fill="url(#gm)"/></g>
+<ellipse cx="345" cy="237" rx="22" ry="4" fill="#08090b"/><ellipse cx="400" cy="237" rx="22" ry="4" fill="#08090b"/>
+<g data-sh><rect x="560" y="170" width="150" height="72" rx="6" fill="url(#gm)"/></g><rect x="572" y="180" width="95" height="52" fill="#06070a"/>
+<g data-show="2"><rect x="572" y="180" width="95" height="52" fill="var(--gold)" opacity=".55"/></g>
+<g data-show="1,2,3"><ellipse cx="450" cy="236" rx="38" ry="6" fill="#d9d3c4" opacity=".75"/><ellipse cx="450" cy="234" rx="26" ry="4" fill="#8a6d43"/></g></svg>`,
+/* 3 Dining Room */
+`<svg viewBox="0 0 800 450">${R(320)}${WIN(80,80,150,140)}
+<line x1="400" y1="0" x2="400" y2="118" stroke="#050608" stroke-width="2"/><polygon points="384,152 416,152 560,320 240,320" fill="var(--gold)" opacity=".07"/><path d="M366 150L434 150L416 116L384 116Z" fill="url(#gm)"/><ellipse cx="400" cy="152" rx="34" ry="5" fill="var(--gold)" opacity=".85"/>
+<g data-sh><rect x="205" y="205" width="42" height="125" rx="6" fill="url(#gc)"/><rect x="553" y="205" width="42" height="125" rx="6" fill="url(#gc)"/>
+<rect x="250" y="250" width="300" height="16" rx="4" fill="url(#gc)"/><rect x="270" y="266" width="14" height="84" fill="url(#gc)"/><rect x="516" y="266" width="14" height="84" fill="url(#gc)"/></g>
+<g data-show="1,2,3"><ellipse cx="400" cy="248" rx="50" ry="9" fill="#d9d3c4" opacity=".7"/><ellipse cx="400" cy="246" rx="34" ry="5" fill="#6d5a40"/></g>
+<g data-show="2"><path d="M386 240q-12-16 0-30M402 240q12-16 0-34M416 240q-8-14 2-26" stroke="var(--rain)" fill="none" opacity=".8"/></g></svg>`,
+/* 4 Shower */
+`<svg viewBox="0 0 800 450">${R(340,'#141920')}
+<path d="${Array.from({length:8},(_,i)=>`M0 ${i*45}H800`).join('')}${Array.from({length:17},(_,i)=>`M${i*50} 0V340`).join('')}" stroke="#fff" opacity=".04"/>
+<rect x="230" y="70" width="220" height="330" fill="#9fb4c8" opacity=".07" stroke="#9fb4c8" stroke-opacity=".35"/>
+<path d="M330 80v20h60" stroke="#555c68" stroke-width="6" fill="none"/><ellipse cx="380" cy="104" rx="22" ry="5" fill="url(#gm)"/>
+<g data-show="1,2">${RAIN(360,112,5,12,270)}<ellipse cx="340" cy="395" rx="90" ry="14" fill="#9fb4c8" opacity=".14"/></g>
+<g data-sh><rect x="500" y="110" width="170" height="270" fill="#3a2a1c"/></g>${Array.from({length:9},(_,i)=>`<path d="M500 ${140+i*28}h170" stroke="#000" opacity=".35"/>`).join('')}
+<g data-show="2"><rect x="505" y="115" width="160" height="260" fill="var(--gold)" opacity=".3"/></g></svg>`,
+/* 5 Small WC */
+`<svg viewBox="0 0 800 450">${R(330)}
+<g data-sh><rect x="150" y="215" width="90" height="70" rx="6" fill="url(#gc)"/><path d="M135 285h120q0 30-30 45h-60q-30-15-30-45z" fill="url(#gm)"/></g><rect x="300" y="190" width="26" height="40" rx="4" fill="#d9d3c4" opacity=".6"/>
+<rect x="470" y="130" width="130" height="170" rx="4" fill="#08090b"/><rect x="476" y="136" width="118" height="158" fill="url(#gl)"/>
+<g data-show="1,2"><ellipse cx="535" cy="215" rx="26" ry="34" fill="#9fb4c8" opacity=".28"/><circle cx="535" cy="190" r="14" fill="#9fb4c8" opacity=".2"/></g>
+<g data-show="2"><rect x="476" y="136" width="118" height="158" fill="#000" opacity=".6"/></g>
+<g data-sh><rect x="615" y="262" width="76" height="14" rx="5" fill="url(#gm)"/><rect x="646" y="276" width="14" height="60" fill="url(#gc)"/></g><path d="M635 262v-22h14" stroke="#555c68" stroke-width="5" fill="none"/>
+<g data-show="3"><line x1="649" y1="244" x2="646" y2="268" stroke="var(--rain)" stroke-width="2"/></g></svg>`,
+/* 6 Bedroom */
+`<svg viewBox="0 0 800 450">${R(310)}${WIN(100,70,150,130)}
+<g data-sh><rect x="190" y="245" width="390" height="100" rx="10" fill="url(#gc)"/></g><rect x="198" y="225" width="380" height="40" rx="14" fill="#2c313c"/><rect x="204" y="214" width="80" height="34" rx="14" fill="#3b4150"/>
+<g data-show="1,2"><path d="M290 232q130-16 288 6v70H290z" fill="#232731"/><ellipse cx="262" cy="226" rx="26" ry="14" fill="url(#gp)"/></g>
+<g data-sh><rect x="600" y="270" width="44" height="80" rx="4" fill="url(#gc)"/><rect x="665" y="140" width="105" height="210" rx="4" fill="url(#gc)"/></g><ellipse cx="622" cy="262" rx="14" ry="8" fill="#14161b"/>
+<g data-show="2"><text x="300" y="190" font-family="Crimson Pro, serif" font-style="italic" fill="var(--dim)" font-size="24">z z z</text></g></svg>`,
+/* 7 The Morning */
+`<svg viewBox="0 0 800 450"><rect width="800" height="450" fill="url(#gs)"/>
+<g data-show="0,1"><circle cx="650" cy="130" r="90" fill="var(--gold)" opacity=".18"/><circle cx="650" cy="130" r="44" fill="#f2d79a"/></g><rect y="380" width="800" height="70" fill="#0d0f13"/>
+<g data-show="0,1"><g data-sh><rect x="330" y="240" width="140" height="150" fill="url(#gc)"/></g><rect x="360" y="262" width="80" height="128" fill="#2a1f18"/><circle cx="426" cy="330" r="4" fill="var(--gold)"/></g>
+<g data-show="2"><rect width="800" height="450" fill="#000"/></g>
+<g data-show="3"><g data-sh><rect x="197" y="250" width="6" height="130" fill="url(#gm)"/><rect x="150" y="226" width="100" height="40" rx="4" fill="#243a52"/><rect x="290" y="340" width="120" height="8" fill="url(#gm)"/></g></g></svg>`,
+/* 8 The Bus */
+`<svg viewBox="0 0 800 450">${R(340,'#10141a')}
+<g data-show="0"><rect x="97" y="230" width="6" height="110" fill="url(#gm)"/><rect x="70" y="205" width="60" height="30" rx="3" fill="#243a52"/></g>
+<g data-show="1,2,3"><g data-sh><rect x="150" y="170" width="470" height="170" rx="22" fill="url(#gm)"/></g><rect x="150" y="290" width="470" height="10" fill="var(--gold)" opacity=".5"/>
+${[0,1,2,3,4].map(i=>`<rect x="${178+i*84}" y="195" width="66" height="62" rx="6" fill="#d9c08a" opacity=".55"/>`).join('')}
+<circle cx="240" cy="345" r="30" fill="#0a0b0e"/><circle cx="240" cy="345" r="13" fill="#3a3f49"/><circle cx="520" cy="345" r="30" fill="#0a0b0e"/><circle cx="520" cy="345" r="13" fill="#3a3f49"/></g>
+<g data-show="2">${[0,1,2,3].map(i=>`<circle cx="${211+i*84}" cy="236" r="10" fill="#14161b"/>`).join('')}</g>
+<g data-show="3"><g data-sh><rect x="650" y="130" width="140" height="210" fill="url(#gc)"/></g>${[0,1,2].map(i=>`<rect x="${668+i*40}" y="158" width="22" height="30" fill="var(--gold)" opacity=".4"/>`).join('')}</g></svg>`,
+/* 9 The School Day */
+`<svg viewBox="0 0 800 450">${R(320)}${WIN(560,70,180,140)}<g data-show="3">${RAIN(570,75,6,32,50)}</g>
+<rect x="120" y="70" width="300" height="130" fill="#17221f" stroke="#08090b" stroke-width="6"/>
+<g data-show="0,3"><g data-sh><rect x="140" y="290" width="120" height="14" rx="3" fill="url(#gc)"/><rect x="340" y="290" width="120" height="14" rx="3" fill="url(#gc)"/><rect x="540" y="290" width="120" height="14" rx="3" fill="url(#gc)"/></g></g>
+<g data-show="1"><g data-sh><rect x="280" y="290" width="240" height="14" rx="3" fill="url(#gc)"/></g><rect x="360" y="282" width="80" height="8" fill="#555c68"/><ellipse cx="400" cy="281" rx="26" ry="3" fill="#8a6d43"/></g>
+<g data-show="2"><rect width="800" height="450" fill="#0b1016"/><rect y="320" width="800" height="130" fill="#10171f"/><ellipse cx="400" cy="372" rx="120" ry="14" fill="#9fb4c8" opacity=".12"/>${RAIN(40,60,26,30,70)}<g data-sh><rect x="340" y="300" width="120" height="10" rx="3" fill="url(#gc)"/></g>${FIG(400,304,.8)}</g></svg>`,
+/* 10 The Walk */
+`<svg viewBox="0 0 800 450">${R(300,'#0c0f15')}
+<polygon points="0,450 800,450 520,300 280,300" fill="#14171d"/><path d="M400 450V300" stroke="#fff" stroke-opacity=".14" stroke-dasharray="14 16" stroke-width="3"/>
+<rect x="40" y="170" width="150" height="140" fill="#08090c"/><rect x="620" y="150" width="140" height="160" fill="#08090c"/>
+<g data-show="0,1"><rect x="176" y="150" width="6" height="150" fill="#08090c"/><circle cx="179" cy="146" r="6" fill="var(--gold)"/><polygon points="179,150 130,300 230,300" fill="var(--gold)" opacity=".1"/><rect x="617" y="150" width="6" height="150" fill="#08090c"/><circle cx="620" cy="146" r="6" fill="var(--gold)"/><polygon points="620,150 570,300 670,300" fill="var(--gold)" opacity=".1"/></g>
+<g data-show="1"><rect width="800" height="450" fill="#000" opacity=".55"/></g>
+<g data-show="2">${FIG(400,350,.8)}<rect x="412" y="298" width="9" height="13" rx="2" fill="var(--gold)" opacity=".8"/></g>
+<g data-show="3"><g data-sh><rect x="560" y="170" width="150" height="150" fill="url(#gc)"/></g><rect x="610" y="215" width="34" height="34" fill="var(--gold)" opacity=".5"/></g></svg>`,
+/* 11 Darkness */
+`<svg viewBox="0 0 800 450"><rect width="800" height="450" fill="#040506"/>${WIN(80,80,180,130)}<g data-show="1,2">${RAIN(95,85,5,36,45)}</g>
+<g data-sh><rect x="490" y="220" width="230" height="60" rx="14" fill="#14171d"/></g><g data-show="0,1,2">${FIG(600,290,.95,'#08090c')}</g>
+<g data-sh><rect x="480" y="260" width="250" height="90" rx="16" fill="#12151a"/></g><ellipse cx="600" cy="205" rx="22" ry="3" fill="#9fb4c8" opacity=".15"/></svg>`,
+/* 12 Two Sides */
+`<svg viewBox="0 0 800 450"><rect width="400" height="450" fill="url(#gh)"/>
+<circle cx="200" cy="190" r="120" fill="var(--gold)" opacity=".22"/><circle cx="200" cy="190" r="56" fill="#f2d79a" opacity=".85"/>
+<circle cx="70" cy="330" r="20" fill="#f2d79a" opacity=".18"/><circle cx="330" cy="120" r="14" fill="#f2d79a" opacity=".2"/><circle cx="310" cy="340" r="26" fill="#f2d79a" opacity=".12"/>
+${FIG(200,420,1.3,'#2b1d10')}
+<rect x="400" width="400" height="450" fill="url(#gw)"/><rect x="400" y="320" width="400" height="130" fill="#08090b"/>${RAIN(430,10,10,36,50)}
+<g transform="translate(600 410) scale(1.3 1.1)" fill="#050607"><circle cx="8" cy="-70" r="17"/><path d="M-30 0q-4-50 22-56 24 2 38 56z"/></g>
+<rect x="397" width="6" height="450" fill="url(#gm)"/></svg>`,
+/* 13 The Friend */
+`<svg viewBox="0 0 800 450">${R(320)}<g data-sh><rect x="200" y="300" width="400" height="14" rx="3" fill="url(#gc)"/></g>
+${FIG(340,300,1.05)}${FIG(470,300,1.05)}<path d="M362 236q40-18 74-6" stroke="#454a56" stroke-width="14" fill="none" stroke-linecap="round"/>
+<g data-show="1,2"><ellipse cx="463" cy="214" rx="6" ry="3.5" fill="#000" opacity=".7"/><ellipse cx="477" cy="214" rx="6" ry="3.5" fill="#000" opacity=".7"/></g></svg>`,
+/* 14 The Storm */
+`<svg viewBox="0 0 800 450"><rect width="800" height="450" fill="#040506"/>
+<g data-show="1,2"><path d="M100 400Q400 50 700 400" stroke="var(--rain)" fill="none" opacity=".55" stroke-width="2"/><path d="M150 420Q400 150 650 420" stroke="var(--dim)" fill="none" opacity=".4" stroke-width="2"/><path d="M200 350Q400 20 600 350" stroke="var(--gold)" fill="none" opacity=".3" stroke-width="2"/><path d="M60 330Q400 -40 740 330" stroke="#9fb4c8" fill="none" opacity=".18"/></g>
+<g data-show="2"><circle cx="400" cy="225" r="120" fill="none" stroke="var(--dim)" opacity=".3"/><circle cx="400" cy="225" r="70" fill="none" stroke="var(--dim)" opacity=".2"/><path d="M430 30l-34 130 44 12-40 160" stroke="#cfe0ff" stroke-width="3" fill="none" opacity=".7"/></g>
+<g data-show="3"><rect width="800" height="450" fill="#000"/></g></svg>`
+];
+
+
+/* ---------------- scene player ---------------- */
+const overlay = document.getElementById('scene-overlay');
+const sceneLabel = document.getElementById('scene-label');
+const sceneBeat = document.getElementById('scene-beat');
+const sceneNext = document.getElementById('scene-next');
+const sceneReturn = document.getElementById('scene-return');
+const flashEl = document.getElementById('flash');
+
+const sceneVisual = document.getElementById('scene-visual');
+let currentRoom = null, beatIndex = 0;
+/* ---------------- i18n ---------------- */
+const CL={fi:["Suunnittelu","Kehitys","Tyylisuunnittelu","Kiitokset","Inspiraatio"],en:["Design","Development","Art direction","Thanks","Inspiration"],sv:["Formgivning","Utveckling","Konstnärlig ledning","Tack till","Inspiration"],de:["Design","Entwicklung","Stildesign","Dank an","Inspiration"]};
+const UI={
+fi:{title:"Kohtalainen Masennus – Showcase",age:"18+ · ARKA SISÄLTÖ",t:"Kohtalainen<br>Masennus",sub:"interaktiivinen tutkielma viidessätoista huoneessa",go:"Aloita",hint:"napauta aloittaaksesi",
+w1:"Tämä showcase on tehty viihdetarkoituksessa. Jos aihe on sinulle herkkä, älä jatka.",w2:"Tämä kokemus sisältää arkaa ja henkilökohtaista materiaalia, joka pohjautuu omakohtaiseen kokemukseen masennuksesta, sekä kauhuelementtejä, säikäytyksiä ja häiritsevää kuvastoa.",w3:"Katso omalla vastuullasi.",cont:"Jatka",
+i1:"Tervetuloa tähän showcaseen.",i2:"Se voi sisältää arkaa materiaalia.",i3:"Varoitimme sinua.",i4:"Mieti kahdesti ennen kuin astut sisään.",rt:"Viisitoista huonetta",rs:"tutustu missä järjestyksessä tahansa — jokainen palauttaa tänne",ret:"palaa showcaseen ↑",nx:"jatka",bk:"palaa showcaseen",rm:"Huone",end:"Loppu.",insp:"todellinen, eletty kokemus",
+hp:"Jos kannat mukanasi jotain tällaista, ota yhteyttä ja hae apua. Et ole yksin tämän kanssa. Arviolta <span class='stat'>280 miljoonaa</span> ihmistä maailmassa elää masennuksen kanssa. Avun hakeminen ei ole heikkoutta, eikä masennus koskaan ole syy lopettaa elämäänsä. Pysy mukana, ja jatka eteenpäin, vaikka hitaasti.",
+res:"Suomi — Kriisipuhelin (MIELI ry), 09 2525 0111<br>Nuoret — Sekasin-chatti, <a href='https://sekasin247.fi' target='_blank' rel='noopener'>sekasin247.fi</a><br>Muualla — <a href='https://findahelpline.com' target='_blank' rel='noopener'>findahelpline.com</a> löytääksesi paikallisen, maksuttoman ja luottamuksellisen avun"},
+en:{title:"Moderate Depression – Showcase",age:"18+ · MATURE CONTENT",t:"Moderate<br>Depression",sub:"an interactive study in fifteen rooms",go:"Begin",hint:"tap to begin",
+w1:"This showcase was made for entertainment. If the subject is sensitive for you, do not continue.",w2:"This experience contains sensitive, personal material based on lived experience of depression, as well as horror elements, jump scares and disturbing imagery.",w3:"View at your own risk.",cont:"Continue",
+i1:"Welcome to this showcase.",i2:"It may contain sensitive material.",i3:"We warned you.",i4:"Think twice before stepping in.",rt:"Fifteen rooms",rs:"explore in any order — each one returns you here",ret:"back to showcase ↑",nx:"continue",bk:"back to showcase",rm:"Room",end:"The end.",insp:"a real, lived experience",
+hp:"If you carry something like this, reach out and get help. You are not alone with this. An estimated <span class='stat'>280 million</span> people worldwide live with depression. Seeking help is not weakness, and depression is never a reason to end your life. Stay with it, and keep going, even slowly.",
+res:"USA — call or text 988<br>Finland — Crisis line (MIELI), 09 2525 0111<br>Sweden — Mind Självmordslinjen, 90101<br>Germany — Telefonseelsorge, 0800 111 0 111<br>Elsewhere — <a href='https://findahelpline.com' target='_blank' rel='noopener'>findahelpline.com</a> to find free, confidential local help"},
+sv:{title:"Måttlig depression – Showcase",age:"18+ · KÄNSLIGT INNEHÅLL",t:"Måttlig<br>depression",sub:"en interaktiv studie i femton rum",go:"Börja",hint:"tryck för att börja",
+w1:"Den här showcasen är gjord i underhållningssyfte. Om ämnet är känsligt för dig, fortsätt inte.",w2:"Upplevelsen innehåller känsligt, personligt material baserat på egen erfarenhet av depression, samt skräckinslag, chockeffekter och störande bildspråk.",w3:"Du tittar på eget ansvar.",cont:"Fortsätt",
+i1:"Välkommen till den här showcasen.",i2:"Den kan innehålla känsligt material.",i3:"Vi varnade dig.",i4:"Tänk efter två gånger innan du kliver in.",rt:"Femton rum",rs:"utforska i vilken ordning som helst — varje rum för dig tillbaka hit",ret:"tillbaka till showcasen ↑",nx:"fortsätt",bk:"tillbaka till showcasen",rm:"Rum",end:"Slut.",insp:"verklig, upplevd erfarenhet",
+hp:"Om du bär på något liknande, ta kontakt och sök hjälp. Du är inte ensam med detta. Uppskattningsvis <span class='stat'>280 miljoner</span> människor i världen lever med depression. Att söka hjälp är inte svaghet, och depression är aldrig ett skäl att avsluta sitt liv. Håll ut, och gå vidare, även om det går långsamt.",
+res:"Sverige — Mind Självmordslinjen, 90101<br>Finland — Kristelefon (MIELI), 09 2525 0111<br>Tyskland — Telefonseelsorge, 0800 111 0 111<br>USA — ring eller sms:a 988<br>Övriga världen — <a href='https://findahelpline.com' target='_blank' rel='noopener'>findahelpline.com</a> för kostnadsfri, konfidentiell hjälp nära dig"},
+de:{title:"Mittelgradige Depression – Showcase",age:"18+ · SENSIBLE INHALTE",t:"Mittelgradige<br>Depression",sub:"eine interaktive Studie in fünfzehn Räumen",go:"Starten",hint:"tippe, um zu beginnen",
+w1:"Dieser Showcase wurde zu Unterhaltungszwecken erstellt. Wenn dich das Thema belastet, mach nicht weiter.",w2:"Diese Erfahrung enthält sensibles, persönliches Material, das auf eigener Erfahrung mit Depressionen beruht, sowie Horrorelemente, Schreckmomente und verstörende Bilder.",w3:"Ansehen auf eigene Verantwortung.",cont:"Weiter",
+i1:"Willkommen in diesem Showcase.",i2:"Er kann sensibles Material enthalten.",i3:"Wir haben dich gewarnt.",i4:"Überlege es dir zweimal, bevor du eintrittst.",rt:"Fünfzehn Räume",rs:"erkunde in beliebiger Reihenfolge — jeder führt dich hierher zurück",ret:"zurück zum Showcase ↑",nx:"weiter",bk:"zurück zum Showcase",rm:"Raum",end:"Ende.",insp:"echte, gelebte Erfahrung",
+hp:"Wenn du etwas Ähnliches in dir trägst, melde dich und such dir Hilfe. Du bist damit nicht allein. Schätzungsweise <span class='stat'>280 Millionen</span> Menschen weltweit leben mit Depressionen. Hilfe zu suchen ist keine Schwäche, und Depression ist niemals ein Grund, das Leben zu beenden. Bleib dran und geh weiter, auch wenn es langsam geht.",
+res:"Deutschland — Telefonseelsorge, 0800 111 0 111<br>Finnland — Krisentelefon (MIELI), 09 2525 0111<br>Schweden — Mind Självmordslinjen, 90101<br>USA — Anruf oder SMS an 988<br>Weltweit — <a href='https://findahelpline.com' target='_blank' rel='noopener'>findahelpline.com</a> für kostenlose, vertrauliche Hilfe vor Ort"}
+};
+const XS={
+fi:{cl:"Sulje",tuT:"Näin pelaat",tu:["Napauta tai klikkaa edetäksesi hetkestä toiseen.","Avaa huoneet missä järjestyksessä haluat. Jokainen kestää muutaman minuutin.","Katso tarkkaan: jokaisessa huoneessa piilee himmeä hohtava piste ✦. Löydä ne kaikki.","Käytä kuulokkeita. Ääni on osa tarinaa. ♪ kytkee äänen pois.","Voit poistua huoneesta milloin tahansa. Jos tulee liikaa, lopeta."],fqT:"UKK",
+fq:[["Mikä tämä on?","Interaktiivinen, henkilökohtainen tutkielma kohtalaisesta masennuksesta viidentoista huoneen kautta."],["Onko tämä diagnoosi tai lääketieteellinen neuvo?","Ei. Tämä on taideteos, ei testi eikä hoito. Jos sinulla on vaikeaa, puhu ammattilaiselle."],["Mitä ✦-kaiut ovat?","Piilotettuja hohtavia pisteitä, yksi jokaisessa huoneessa, joka kerta eri paikassa. Löydä kaikki viisitoista ja jotain aukeaa."],["Miksi pelata uudelleen?","Kaikujen paikat vaihtuvat, raskaampi Syvä tila aukeaa lopun jälkeen ja löytämiesi kaikujen määrä muuttaa loppusanat."],["Tallentuuko tietoni?","Vain kieli, äänivalinta ja kaikujen edistyminen, laitteellesi. Tämä sivu ei kerää mitään."],["Mistä saan apua?","Katso lopusta kriisipuhelimet tai findahelpline.com."]],
+ec:"kaikua löydetty",all:"Löysit jokaisen kaiun. Raskainakin päivinä pieniä valoja on olemassa.",deep:"Syvä tila",on:"päällä",off:"pois",found:"Kaiku löytyi"},
+en:{cl:"Close",tuT:"How to play",tu:["Tap or click to move through each moment.","Open the rooms in any order. Each one takes a few minutes.","Look closely: a faint glowing dot ✦ hides in every room. Find them all.","Use headphones. Sound is part of the story. ♪ turns it off.","You can leave any room at any time. If it becomes too much, stop."],fqT:"FAQ",
+fq:[["What is this?","An interactive, personal study of moderate depression, told through fifteen rooms."],["Is this a diagnosis or medical advice?","No. It is an artistic piece, not a test or a treatment. If you are struggling, talk to a professional."],["What are the ✦ echoes?","Hidden glowing dots, one in each room, in a new place each visit. Find all fifteen and something unlocks."],["Why play again?","Echo positions change, the heavier Deep mode unlocks after the ending, and your echo count changes the final words."],["Is my data saved?","Only your language, sound setting and echo progress, on your device. This page collects nothing."],["Where can I get help?","See the end of the showcase for crisis lines, or findahelpline.com."]],
+ec:"echoes found",all:"You found every echo. Even on the heaviest days, small lights exist.",deep:"Deep mode",on:"on",off:"off",found:"Echo found"},
+sv:{cl:"Stäng",tuT:"Så spelar du",tu:["Tryck eller klicka för att gå vidare genom varje ögonblick.","Öppna rummen i valfri ordning. Varje rum tar några minuter.","Titta noga: en svagt lysande punkt ✦ göms i varje rum. Hitta dem alla.","Använd hörlurar. Ljudet är en del av berättelsen. ♪ stänger av det.","Du kan lämna ett rum när som helst. Blir det för mycket, avbryt."],fqT:"Vanliga frågor",
+fq:[["Vad är det här?","En interaktiv, personlig studie av måttlig depression, berättad genom femton rum."],["Är det en diagnos eller medicinsk rådgivning?","Nej. Det är ett konstverk, inget test eller någon behandling. Om du har det svårt, prata med en professionell."],["Vad är ✦-ekona?","Dolda lysande punkter, en i varje rum, på ett nytt ställe varje gång. Hitta alla femton så öppnas något."],["Varför spela igen?","Ekonas platser ändras, det tyngre Djupa läget öppnas efter slutet, och antalet ekon du hittat ändrar de sista orden."],["Sparas mina uppgifter?","Bara språk, ljudval och ekoframsteg, på din enhet. Sidan samlar inte in något."],["Var kan jag få hjälp?","Se slutet för krislinjer eller findahelpline.com."]],
+ec:"ekon hittade",all:"Du hittade varje eko. Även de tyngsta dagarna finns små ljus.",deep:"Djupt läge",on:"på",off:"av",found:"Eko hittat"},
+de:{cl:"Schließen",tuT:"So spielst du",tu:["Tippe oder klicke, um dich durch jeden Moment zu bewegen.","Öffne die Räume in beliebiger Reihenfolge. Jeder dauert ein paar Minuten.","Schau genau hin: In jedem Raum versteckt sich ein schwach leuchtender Punkt ✦. Finde sie alle.","Nutze Kopfhörer. Der Ton gehört zur Geschichte. ♪ schaltet ihn aus.","Du kannst jeden Raum jederzeit verlassen. Wird es zu viel, hör auf."],fqT:"FAQ",
+fq:[["Was ist das?","Eine interaktive, persönliche Studie über mittelgradige Depression, erzählt in fünfzehn Räumen."],["Ist das eine Diagnose oder medizinischer Rat?","Nein. Es ist ein Kunstwerk, kein Test und keine Behandlung. Wenn es dir schlecht geht, sprich mit einer Fachperson."],["Was sind die ✦-Echos?","Versteckte leuchtende Punkte, einer pro Raum, bei jedem Besuch an anderer Stelle. Finde alle fünfzehn, und etwas wird freigeschaltet."],["Warum nochmal spielen?","Die Echo-Positionen ändern sich, der schwerere Tiefen-Modus wird nach dem Ende freigeschaltet, und die Zahl deiner Echos verändert die letzten Worte."],["Werden meine Daten gespeichert?","Nur Sprache, Tonwahl und Echo-Fortschritt, auf deinem Gerät. Diese Seite sammelt nichts."],["Wo bekomme ich Hilfe?","Am Ende findest du Krisenhotlines oder findahelpline.com."]],
+ec:"Echos gefunden",all:"Du hast jedes Echo gefunden. Selbst an den schwersten Tagen gibt es kleine Lichter.",deep:"Tiefen-Modus",on:"an",off:"aus",found:"Echo gefunden"}};
+for(const k in XS)Object.assign(UI[k],XS[k]);
+UI.fi.hint="napauta aloittaaksesi tai pidä pohjassa astuaksesi sisään";UI.en.hint="tap to begin, or hold to step inside";UI.sv.hint="tryck för att börja, eller håll nedtryckt för att kliva in";UI.de.hint="tippe zum Starten oder halte gedrückt, um einzutreten";
+const HK={fi:["Se näyttää tavalliselta päivältä.","Sanot, että kaikki on hyvin.","Kukaan ei kysy kahdesti."],en:["It looks like an ordinary day.","You say you are fine.","Nobody asks twice."],sv:["Det ser ut som en vanlig dag.","Du säger att allt är bra.","Ingen frågar två gånger."],de:["Es sieht aus wie ein gewöhnlicher Tag.","Du sagst, dir geht es gut.","Niemand fragt zweimal."]};
+const COPY='©Dep showcase / Milxxxxxxxxxxxxx'; /* <- replace with your final name */
+/* beats: "stage|sound cue" in the same order as the Finnish rooms */
+const TX={
+en:{t:["Hallway","Living Room","Kitchen","Dining Room","Shower","Small Toilet","Bedroom","The Morning","The Bus","The School Day","The Walk","Darkness","Two Sides","The Friend","The Storm"],b:[
+["Black screen.","A wooden door creaks open. White light pours into the dark.|door — creak","A shadow steps inside. The door closes behind it.|door — slam","You are on the other side of the hallway. The shadow stands still, staring at you.|low tone"],
+["A small sofa, a table, a television, a rug. Quiet.","You sit on the sofa and look at the window.","Heavy rain. You turn back to the room.","White eyes appear in the dark for three seconds — then vanish.|screech"],
+["Kitchen table, oven, stove, microwave, fridge, a window.","You open the fridge. Take out food. Set it on the table.","Food on a plate, a minute in the microwave, you wait.","The timer beeps. You take the plate out and close the door.|beep — beep"],
+["A table, four chairs, a lamp, windows.","You sit down, a plate in front of you. You pick up the fork.","Your mind goes quiet, then loud. Should you eat? Maybe not. Maybe later.|overload — rising","You stare at the food for a long time."],
+["A shower door, soap, a sauna behind the glass.","Water runs. You wash yourself slowly.","The sauna light is on. It feels like someone is watching you."],
+["A toilet, a sink, a roll of paper within reach.","You sit and stare into the mirror.","For a moment you feel locked in a dark room — no one nearby, only the sound of rain.","You come back. You stand up and turn on the tap.|running water"],
+["A bed, a rug, a wardrobe, a lamp that stays off.","You lie down and pull the blanket over you.","Sleep arrives."],
+["You wake, brush your teeth, drink coffee, eat a little.","You go out for a walk. The door opens, then closes behind you.|door","Black screen.","A bus stop. Clear sky. A beautiful, ordinary morning."],
+["Seats, a few strangers, two doors. The bus leaves for the railway station.","You step off. Black screen. Another stop.","A second bus, fuller this time, drives for ten minutes.","You arrive at school."],
+["A classroom, a handful of other students.","Two hours pass. Lunch. You eat, and then stop.","Recess. You sit alone in the schoolyard. It rains. No one is near.|rain","For a moment the world narrows: alone, unnoticed, tired. Then, slowly, you go back to class.|overload — fading"],
+["School ends. You start walking toward the city.","The screen darkens slowly. After thirty minutes you stop.","You call a friend and honestly say you are overwhelmed.","After a long walk and one more bus ride, you get home."],
+["You sit alone on the sofa in the dark living room. No one is near. It is quiet.","You stare out of the window.","Heavy rain."],
+["One half of the screen is warm and bright — laughter, color, lightness.","The other half is dark and still — heavy, silent, grey.","Both are true at the same time."],
+["At school your friend is crying. You sit beside them and comfort them.","They look up. You notice the dark circles under their eyes.","For a moment they look as tired as you feel."],
+["Black screen.","A storm of half-formed thoughts runs through your mind — doubt, exhaustion, a wish to vanish from the noise, not from the world.|low hum","It passes, the way weather passes.","A sudden black screen."]]},
+sv:{t:["Korridoren","Vardagsrummet","Köket","Matsalen","Duschen","Lilla toaletten","Sovrummet","Morgonen","Bussen","Skoldagen","Promenaden","Mörkret","Två sidor","Vännen","Stormen"],b:[
+["Svart skärm.","En trädörr knarrar upp. Vitt ljus flödar in i mörkret.|dörr — knarr","En skugga kliver in. Dörren stängs bakom den.|dörr — smäll","Du står på andra sidan korridoren. Skuggan står stilla och stirrar på dig.|låg ton"],
+["En liten soffa, ett bord, en tv, en matta. Tyst.","Du sätter dig i soffan och tittar på fönstret.","Hällande regn. Du vänder dig tillbaka mot rummet.","Vita ögon uppenbarar sig i mörkret i tre sekunder — sedan försvinner de.|skrik"],
+["Köksbord, ugn, spis, mikrovågsugn, kylskåp, ett fönster.","Du öppnar kylskåpet. Tar fram mat. Ställer den på bordet.","Maten på en tallrik, en minut i mikron, du väntar.","Timern piper. Du tar ut tallriken och stänger luckan.|pip — pip"],
+["Ett bord, fyra stolar, en lampa, fönster.","Du sätter dig med tallriken framför dig. Du tar gaffeln i handen.","Tankarna tystnar, sedan blir de högljudda. Borde du äta? Kanske inte. Kanske senare.|överbelastning — stigande","Du stirrar länge på maten."],
+["En duschdörr, tvål, en bastu bakom glaset.","Vattnet rinner. Du tvättar dig långsamt.","Bastulampan är tänd. Det känns som om någon iakttar dig."],
+["En toalettstol, ett handfat, en toalettpappersrulle inom räckhåll.","Du sitter och stirrar in i spegeln.","En stund känns det som att du är inlåst i ett mörkt rum — ingen i närheten, bara ljudet av regn.","Du kommer tillbaka. Du reser dig och öppnar kranen.|rinnande vatten"],
+["En säng, en matta, en garderob, en lampa som förblir släckt.","Du lägger dig och drar täcket över dig.","Sömnen kommer."],
+["Du vaknar, borstar tänderna, dricker kaffe, äter lite.","Du går ut på en promenad. Dörren öppnas och stängs bakom dig.|dörr","Svart skärm.","En busshållplats. Klar himmel. En vacker, vanlig morgon."],
+["Säten, några främlingar, två dörrar. Bussen åker mot järnvägsstationen.","Du kliver av. Svart skärm. En ny hållplats.","En andra buss, fullare den här gången, kör i tio minuter.","Du kommer fram till skolan."],
+["Ett klassrum, en handfull andra elever.","Två timmar går. Lunch. Du äter, och slutar sedan.","Rast. Du sitter ensam på skolgården. Det regnar. Ingen är i närheten.|regn","En stund smalnar världen av: ensam, obemärkt, trött. Sedan går du, långsamt, tillbaka till klassrummet.|överbelastning — avtagande"],
+["Skolan slutar. Du börjar gå mot stan.","Skärmen mörknar långsamt. Efter trettio minuter stannar du.","Du ringer en vän och säger ärligt att du är överväldigad.","Efter en lång promenad och ytterligare en bussresa kommer du hem."],
+["Du sitter ensam i soffan i det mörka vardagsrummet. Ingen är i närheten. Det är tyst.","Du stirrar ut genom fönstret.","Hällande regn."],
+["Ena halvan av skärmen är varm och ljus — skratt, färg, lätthet.","Den andra halvan är mörk och orörlig — tung, tyst, grå.","Båda är sanna samtidigt."],
+["I skolan gråter din vän. Du sätter dig bredvid och tröstar.","Hen tittar upp. Du ser de mörka ringarna under ögonen.","En stund ser hen lika trött ut som du känner dig."],
+["Svart skärm.","En storm av halvfärdiga tankar drar genom ditt sinne — tvivel, utmattning, en önskan att försvinna från bruset, inte från världen.|lågt surr","Den drar förbi, som vädret gör.","Plötsligt svart skärm."]]},
+de:{t:["Flur","Wohnzimmer","Küche","Esszimmer","Dusche","Kleines WC","Schlafzimmer","Der Morgen","Der Bus","Der Schultag","Der Spaziergang","Dunkelheit","Zwei Seiten","Der Freund","Der Sturm"],b:[
+["Schwarzer Bildschirm.","Eine Holztür knarrt auf. Weißes Licht strömt in die Dunkelheit.|Tür — Knarren","Ein Schatten tritt ein. Die Tür schließt sich hinter ihm.|Tür — Knall","Du bist auf der anderen Seite des Flurs. Der Schatten steht regungslos und starrt dich an.|tiefer Ton"],
+["Ein kleines Sofa, ein Tisch, ein Fernseher, ein Teppich. Stille.","Du setzt dich aufs Sofa und schaust zum Fenster.","Starker Regen. Du wendest dich wieder dem Raum zu.","Weiße Augen erscheinen drei Sekunden lang im Dunkeln — dann verschwinden sie.|Kreischen"],
+["Küchentisch, Ofen, Herd, Mikrowelle, Kühlschrank, ein Fenster.","Du öffnest den Kühlschrank. Nimmst Essen heraus. Stellst es auf den Tisch.","Das Essen auf einen Teller, eine Minute in die Mikrowelle, du wartest.","Der Timer piept. Du nimmst den Teller heraus und schließt die Klappe.|Piep — Piep"],
+["Ein Tisch, vier Stühle, eine Lampe, Fenster.","Du setzt dich, den Teller vor dir. Du nimmst die Gabel in die Hand.","Dein Kopf wird still, dann laut. Solltest du essen? Vielleicht nicht. Vielleicht später.|Überlastung — ansteigend","Du starrst lange auf das Essen."],
+["Eine Duschtür, Seife, eine Sauna hinter dem Glas.","Wasser läuft. Du wäschst dich langsam.","Das Saunalicht brennt. Es fühlt sich an, als würde dich jemand beobachten."],
+["Eine Toilette, ein Waschbecken, eine Rolle Papier in Reichweite.","Du sitzt da und starrst in den Spiegel.","Für einen Moment fühlst du dich in einem dunklen Raum eingesperrt — niemand in der Nähe, nur das Geräusch des Regens.","Du kehrst zurück. Du stehst auf und drehst den Wasserhahn auf.|fließendes Wasser"],
+["Ein Bett, ein Teppich, ein Schrank, eine Lampe, die aus bleibt.","Du legst dich hin und ziehst die Decke über dich.","Der Schlaf kommt."],
+["Du wachst auf, putzt dir die Zähne, trinkst Kaffee, isst eine Kleinigkeit.","Du gehst spazieren. Die Tür öffnet sich und schließt sich hinter dir.|Tür","Schwarzer Bildschirm.","Eine Bushaltestelle. Klarer Himmel. Ein schöner, gewöhnlicher Morgen."],
+["Sitze, ein paar Fremde, zwei Türen. Der Bus fährt zum Bahnhof.","Du steigst aus. Schwarzer Bildschirm. Eine weitere Haltestelle.","Ein zweiter Bus, diesmal voller, fährt zehn Minuten.","Du kommst in der Schule an."],
+["Ein Klassenzimmer, eine Handvoll anderer Schüler.","Zwei Stunden vergehen. Mittagessen. Du isst, und hörst dann auf.","Pause. Du sitzt allein auf dem Schulhof. Es regnet. Niemand ist in der Nähe.|Regen","Für einen Moment wird die Welt eng: allein, unbemerkt, müde. Dann gehst du langsam zurück in die Klasse.|Überlastung — abklingend"],
+["Die Schule endet. Du gehst los in Richtung Stadt.","Der Bildschirm dunkelt langsam ab. Nach dreißig Minuten bleibst du stehen.","Du rufst einen Freund an und sagst ehrlich, dass du überfordert bist.","Nach einem langen Weg und einer weiteren Busfahrt kommst du nach Hause."],
+["Du sitzt allein auf dem Sofa im dunklen Wohnzimmer. Niemand ist in der Nähe. Es ist still.","Du starrst aus dem Fenster.","Starker Regen."],
+["Eine Hälfte des Bildschirms ist warm und hell — Lachen, Farbe, Leichtigkeit.","Die andere Hälfte ist dunkel und reglos — schwer, still, grau.","Beides ist gleichzeitig wahr."],
+["In der Schule weint dein Freund. Du setzt dich neben ihn und tröstest ihn.","Er schaut auf. Du siehst die dunklen Ringe unter seinen Augen.","Für einen Moment sieht er so müde aus, wie du dich fühlst."],
+["Schwarzer Bildschirm.","Ein Sturm halbfertiger Gedanken zieht durch deinen Kopf — Zweifel, Erschöpfung, der Wunsch, dem Lärm zu entkommen, nicht der Welt.|tiefes Brummen","Er zieht vorüber, wie das Wetter vorüberzieht.","Plötzlich ein schwarzer Bildschirm."]]}
+};
+let lang='fi';
+const S=k=>(UI[lang]||UI.fi)[k];
+const RT=i=>lang==='fi'?rooms[i].title:TX[lang].t[i];
+function BT(r,b){const o=rooms[r].beats[b];if(lang==='fi')return o;
+  const p=TX[lang].b[r][b].split('|');return {stage:p[0],sfx:p[1],flash:o.flash};}
+function setLabel(){sceneLabel.textContent=`${S('rm')} ${String(currentRoom+1).padStart(2,'0')} — ${RT(currentRoom)}`;}
+function fillEnd(){
+  document.getElementById('ending-text').textContent=S('end');
+  const c=CL[lang];
+  document.getElementById('ending-credits').innerHTML=`✦ ${ST.last||0}/15 ${S('ec')}${(ST.last||0)>=15?'<br>'+S('all'):''}<br><b>${c[4]}</b> — ${S('insp')}<br>${COPY}`;
+  document.getElementById('help-box').innerHTML=`${S('hp')}<div class="resources">${S('res')}</div>`;
+}
+function applyLang(l){
+  lang=UI[l]?l:'en';
+  try{localStorage.setItem('lang',lang);}catch(e){}
+  document.documentElement.lang=lang; document.title=S('title');
+  document.querySelectorAll('[data-i]').forEach(e=>{e.innerHTML=S(e.dataset.i);});
+  document.querySelectorAll('.room-item').forEach(li=>{li.querySelector('.name').textContent=RT(+li.dataset.index);});
+  document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));
+  if(currentRoom!==null&&overlay.classList.contains('active')){setLabel();showBeat();}
+  if(document.getElementById('help-box').innerHTML) fillEnd();
+  deepTxt(); if(document.getElementById('modal').classList.contains('on')) openModal(document.getElementById('modal').dataset.k);
+}
+document.querySelectorAll('#lang button').forEach(b=>b.onclick=()=>applyLang(b.dataset.l));
+
+/* ---------------- sound: 100% original, synthesized live (no samples, no files) ---------------- */
+const W=[.5,.6,.5,.7,.5,.7,.6,.35,.5,.7,.6,.9,.6,.6,.95]; /* how heavy each room feels (0-1) */
+let ML,AC=null,MG,BUS,NB,RG,RF,DG,DO,PG,PF,PO=[],R3,BUSRV,IR,AR=-1,muted=false;
+try{muted=localStorage.getItem('mute')==='1';}catch(e){}
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function src(){const n=AC.createBufferSource();n.buffer=NB;n.loop=true;return n;}
+function audioInit(){
+  if(AC){try{const p=AC.resume();if(p&&p.catch)p.catch(()=>{});}catch(e){}return;}
+  try{AC=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});}catch(e){return;}
+  try{const u=AC.createBufferSource();u.buffer=AC.createBuffer(1,1,22050);u.connect(AC.destination);u.start();}catch(e){}
+  try{
+  const cmp=AC.createDynamicsCompressor();cmp.threshold.value=-16;cmp.knee.value=14;cmp.ratio.value=10;cmp.attack.value=.003;cmp.release.value=.2;MG=AC.createGain();MG.gain.value=muted?0:.7;ML=AC.createBiquadFilter();ML.type='lowpass';ML.frequency.value=12000;MG.connect(ML);ML.connect(cmp);cmp.connect(AC.destination);
+  NB=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const n=AC.sampleRate*2.4|0;IR=AC.createBuffer(2,n,AC.sampleRate);
+  for(let c=0;c<2;c++){const x=IR.getChannelData(c);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6);}
+  mkBus();
+  /* rain bed: seamless pink noise, gusting, filtered per room */
+  const PB=AC.createBuffer(1,AC.sampleRate*8|0,AC.sampleRate),p=PB.getChannelData(0);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<p.length;i++){const w=Math.random()*2-1;b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.969*b2+w*.153852;b3=.8665*b3+w*.3104856;b4=.55*b4+w*.5329522;b5=-.7616*b5-w*.016898;p[i]=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.11;b6=w*.115926;}
+  const X=AC.sampleRate*.4|0;for(let i=0;i<X;i++){const k=i/X;p[i]=p[i]*k+p[p.length-X+i]*(1-k);}
+  const rs=()=>{const n=AC.createBufferSource();n.buffer=PB;n.loop=true;n.loopEnd=(p.length-X)/AC.sampleRate;return n;};
+  RG=AC.createGain();RG.gain.value=0;RG.connect(MG);
+  const GU=AC.createGain();GU.gain.value=1;const gl=AC.createOscillator(),gg=AC.createGain();gl.frequency.value=.07;gg.gain.value=.12;gl.connect(gg);gg.connect(GU.gain);gl.start();
+  const hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=160;RF=AC.createBiquadFilter();RF.type='lowpass';RF.frequency.value=3000;
+  const r=rs();r.connect(GU);GU.connect(hp);hp.connect(RF);RF.connect(RG);r.start();
+  const lo=AC.createBiquadFilter();lo.type='lowpass';lo.frequency.value=260;const r2=rs();r2.playbackRate.value=.6;const g2=AC.createGain();g2.gain.value=1.3;r2.connect(lo);lo.connect(g2);g2.connect(RG);r2.start(AC.currentTime+1.3);
+  const h3=AC.createBiquadFilter();h3.type='highpass';h3.frequency.value=2200;R3=AC.createGain();R3.gain.value=0;const r3=rs();r3.playbackRate.value=1.6;const l3=AC.createBiquadFilter();l3.type='lowpass';l3.frequency.value=6500;r3.connect(h3);h3.connect(l3);l3.connect(R3);R3.connect(RG);r3.start(AC.currentTime+.7);
+  setInterval(()=>{if(!AC||muted)return;const q=Math.min(1.2,(AMB[AR]||DEF)[0]*1.6),t=AC.currentTime+.02,n=Math.min(4,Math.round(q*rnd(1,4)));for(let i=0;i<n;i++)N(rnd(1500,4200),'bandpass',t+rnd(0,.1),.06,rnd(.006,.016),rnd(900,1800));},110);
+  /* generative pad: root, third, fifth */
+  PG=AC.createGain();PG.gain.value=0;PF=AC.createBiquadFilter();PF.type='lowpass';PF.frequency.value=600;PF.connect(PG);PG.connect(BUS);
+  [0,1,2].forEach(i=>{const o=AC.createOscillator();o.type=i===1?'triangle':'sine';o.detune.value=(i-1)*7;o.frequency.value=110;o.connect(PF);o.start();PO.push(o);});
+  const lf=AC.createOscillator(),lg=AC.createGain();lf.frequency.value=.11;lg.gain.value=.012;lf.connect(lg);lg.connect(PG.gain);lf.start();
+  DO=AC.createOscillator();DO.frequency.value=50;DG=AC.createGain();DG.gain.value=0;DO.connect(DG);DG.connect(MG);DO.start();
+  tick();setInterval(()=>{if(AC&&!muted&&(AMB[AR]||DEF)[7])heart(AC.currentTime+.02,.2);},1100);
+  }catch(e){AC=null;}
+}
+function mkBus(){BUS=AC.createGain();BUS.connect(MG);const cv=AC.createConvolver();cv.buffer=IR;BUSRV=AC.createGain();BUSRV.gain.value=.45;BUS.connect(cv);cv.connect(BUSRV);BUSRV.connect(MG);}
+/* cut every scheduled / ringing effect instantly (used when leaving a room) */
+function killSfx(){
+  if(!AC)return;const t=AC.currentTime,ob=BUS,orv=BUSRV;
+  ob.gain.cancelScheduledValues(t);ob.gain.setTargetAtTime(0,t,.015);orv.gain.setTargetAtTime(0,t,.015);
+  setTimeout(()=>{ob.disconnect();orv.disconnect();},300);
+  mkBus();PG.disconnect();PG.connect(BUS);
+}
+/* leaving a room: scene ambience (rain, music, drone, heartbeat) stops instantly too, menu ambience returns after a beat */
+function hardMute(){
+  if(!AC)return;const t=AC.currentTime;AR=-1;
+  MG.gain.cancelScheduledValues(t);MG.gain.setValueAtTime(0,t);                      /* master to zero on the very next audio frame */
+  [RG,PG,DG,R3].forEach(g=>{g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(0,t);});
+  setTimeout(()=>{const n=AC.currentTime;MG.gain.cancelScheduledValues(n);MG.gain.setValueAtTime(muted?0:.7,n);},200);
+  setTimeout(()=>{if(AR===-1)setAmb(-1);},900);
+}
+function N(f,type,t,dur,vol,f2){if(!AC)return;const s=src(),F=AC.createBiquadFilter(),G=AC.createGain();F.type=type;F.frequency.setValueAtTime(f,t);
+  if(f2)F.frequency.exponentialRampToValueAtTime(f2,t+dur);G.gain.setValueAtTime(0,t);G.gain.linearRampToValueAtTime(vol,t+Math.min(.05,dur/3));
+  G.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(F);F.connect(G);G.connect(BUS);s.start(t,Math.random()*1.5);s.stop(t+dur+.1);}
+function T(type,f0,f1,t,dur,vol,ff){if(!AC)return;const o=AC.createOscillator(),G=AC.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  G.gain.setValueAtTime(0,t);G.gain.linearRampToValueAtTime(vol,t+dur*.15);G.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  let n=o;if(ff){const F=AC.createBiquadFilter();F.type='bandpass';F.Q.value=7;F.frequency.setValueAtTime(ff[0],t);F.frequency.linearRampToValueAtTime(ff[1],t+dur);o.connect(F);n=F;}
+  n.connect(G);G.connect(BUS);o.start(t);o.stop(t+dur+.1);}
+function heart(t,v){T('sine',70,38,t,.16,v);T('sine',60,34,t+.27,.18,v*.7);}
+function thunder(t){N(160,'lowpass',t,4.5,.5,50);N(90,'lowpass',t+.6,3,.3,40);T('sine',48,30,t,3,.3);}
+/* door, slam, jumpscare, fridge: layered, all synthesized */
+function doorOpen(t){
+  N(2600,'bandpass',t,.04,.18);N(1800,'bandpass',t+.07,.05,.14);                 /* handle + latch click */
+  for(let i=0;i<14;i++){if(Math.random()<.2)continue;const f=rnd(380,560)+i*30,tt=t+.15+i*.11+rnd(0,.05);T('sawtooth',f,f*rnd(1.05,1.2),tt,rnd(.08,.16),.4,[f*2,f*2.2]);} /* stick-slip hinge squeal */
+  T('sawtooth',90,130,t+.18,1.5,.25,[500,900]);N(500,'bandpass',t+.15,1.6,.05);   /* groan + wood friction */
+  N(250,'lowpass',t+.4,1.4,.12,700);T('sine',70,55,t+1.8,.25,.25);               /* air + soft stop */
+}
+function doorSlam(t){
+  PG.gain.setTargetAtTime(0,t,.03);RG.gain.setTargetAtTime(0,t,.03);DG.gain.setTargetAtTime(0,t,.03);setTimeout(()=>setAmb(AR),1800); /* breath held */
+  T('sine',200,420,t,.14,.04);const h=t+.14;
+  N(6000,'highpass',h,.012,1);N(900,'lowpass',h,.28,1.1,120);                    /* crack + slab impact */
+  T('sine',150,38,h,.9,1.2);T('triangle',260,70,h,.25,.6);                       /* body + knock */
+  T('sawtooth',140,120,h,.5,.5,[260,240]);T('sawtooth',210,190,h,.4,.4,[420,380]); /* panel ring */
+  [.06,.11,.17,.26].forEach((d,i)=>N(rnd(900,1800),'bandpass',h+d,.05,.2-i*.04)); /* frame rattle */
+  N(120,'lowpass',h,1.6,.4,40);                                                  /* room boom */
+  setTimeout(()=>{overlay.classList.add('fx');setTimeout(()=>overlay.classList.remove('fx'),500);},140);
+}
+function scare(t){
+  PG.gain.setTargetAtTime(0,t,.05);RG.gain.setTargetAtTime(0,t,.05);DG.gain.setTargetAtTime(0,t,.05);setTimeout(()=>setAmb(AR),2400); /* sudden silence */
+  const h=t+.18;T('sine',900,3200,t,.18,.05);                                       /* hit lands with the flash */
+  [700,933,1400,2111].forEach(f=>T('sawtooth',f*1.9,f*.6,h,1.1,.2));[1100,2300].forEach(f=>T('square',f,f*.55,h,.8,.1));
+  T('sawtooth',300,220,h,1,.3,[1200,2500]);N(9000,'highpass',h,.5,.7);N(2500,'bandpass',h,1,.3,500);
+  T('sine',58,22,h,1.4,1);T('sine',95,30,h,.5,.8);T('sine',4300,4300,h+.5,2.2,.03);
+}
+function fridge(t){
+  N(2000,'bandpass',t,.03,.12);N(900,'bandpass',t+.05,.22,.18,300);              /* handle + rubber seal peeling */
+  T('sine',170,70,t+.22,.14,.45);N(250,'lowpass',t+.22,.12,.3);                   /* seal pop */
+  T('sine',58,60,t+.3,4,.06);T('sine',116,118,t+.3,4,.03);N(500,'lowpass',t+.3,3,.05); /* compressor hum + airflow */
+  [3100,2600,3400].forEach((f,i)=>T('sine',f,f*.99,t+.55+i*.22,.35,.04));          /* jars clink */
+}
+const CUE={'2.1':fridge};
+/* cue keys match the Finnish sound cues in the room data */
+const SFX={
+'narina':doorOpen,
+'pamaus':doorSlam,
+'matala sävel':t=>{T('sine',61,60,t,5,.35);T('sine',92,90,t,5,.14);T('sine',63,62,t,5,.2);N(200,'lowpass',t,5,.08);},
+'kirskahdus':scare,
+'piip':t=>{[0,.4].forEach(d=>{T('sine',2000,2000,t+d,.2,.12);T('sine',4000,4000,t+d,.2,.03);});},
+'nouseva':t=>{[80,83,121].forEach(f=>T('sawtooth',f,f*6,t,3.2,.07));T('sine',4300,4300,t+1,2.2,.025);N(300,'bandpass',t,3.2,.14,3500);for(let i=0;i<9;i++)heart(t+i*(.55-i*.04),.2);},
+'hälvenevä':t=>{T('sine',4300,4200,t,3.2,.035);T('sawtooth',420,60,t,3.2,.06);N(2800,'bandpass',t,3.2,.09,200);},
+'virtaava':t=>{for(let i=0;i<22;i++)N(rnd(1500,4200),'bandpass',t+i*.11,.18,.05);N(2500,'bandpass',t,2.6,.12);},
+'sade':t=>{N(5000,'highpass',t,3.5,.12);for(let i=0;i<10;i++)T('sine',rnd(1400,3800),600,t+rnd(0,3),.05,.03);},
+'hurina':t=>{T('sine',41,39,t,5,.5);T('sine',82,80,t,5,.2);N(110,'lowpass',t,5,.35);},
+'ovi':t=>{N(380,'lowpass',t,.35,.35);T('sine',140,55,t,.3,.4);N(3000,'bandpass',t+.1,.04,.15);}};
+function sfxPlay(){
+  try{const bb=currentRoom!==null&&rooms[currentRoom].beats[beatIndex];if(bb&&navigator.vibrate&&(bb.flash||/pamaus|kirskahdus/.test(bb.sfx||'')))navigator.vibrate([70,40,140]);}catch(e){}
+  if(!AC||muted||currentRoom===null)return;
+  const b=rooms[currentRoom].beats[beatIndex],t=AC.currentTime+.01;
+  if(beatIndex===0)N(300,'lowpass',t,1.4,.1,1600); else T('sine',420,300,t,.09,.03);
+  const c=CUE[currentRoom+'.'+beatIndex];if(c)c(t);
+  if(b.sfx){const k=Object.keys(SFX).find(k=>b.sfx.includes(k));if(k)SFX[k](t);}
+  if(b.flash&&!(b.sfx&&b.sfx.includes('kirskahdus'))){N(9000,'highpass',t+.19,.12,.5);T('sine',70,28,t+.19,.7,.9);}
+}
+/* ambience per room: [rain, drone, rain-band Hz, root Hz, third ratio, pad vol, thunder, heartbeat] */
+const DEF=[.55,.08,1500,110,1.2,.05,0,0];
+const AMB=[[0,.5,400,98,1.2,.07,0,0],[.5,.15,700,110,1.2,.05,.2,0],[0,.1,500,123,1.25,.05,0,0],[.2,.1,600,110,1.2,.05,.1,0],[.2,.1,600,130,1.25,.04,0,0],[.4,.2,900,98,1.2,.06,0,0],[.1,.15,500,87,1.2,.05,0,0],[.05,.05,1400,196,1.25,.06,0,0],[.1,.05,800,110,1.2,.04,0,0],[.6,.1,2500,98,1.2,.05,.2,0],[.6,.1,2200,98,1.2,.05,.3,0],[.7,.5,900,73,1.2,.08,.5,1],[0,.2,600,110,1.22,.07,0,0],[.3,.1,600,110,1.2,.05,0,0],[.9,.7,3000,65,1.2,.1,1.2,1]];
+function setAmb(r){
+  if(!AC)return;AR=r;const a=AMB[r]||DEF,t=AC.currentTime;
+  ML.frequency.setTargetAtTime(r<0?12000:Math.max(1300,9000-(W[r]||0)*8200),t,1.2); /* heavier room = flatter, more distant hearing */
+  const rl=Math.min(1.2,a[0]*1.6);RG.gain.setTargetAtTime(rl*.42,t,.8);RF.frequency.setTargetAtTime(a[2]*2.2,t,.8);R3.gain.setTargetAtTime(Math.max(0,Math.min(1,(a[2]-1500)/1500))*rl*.55,t,.8);DG.gain.setTargetAtTime(a[1]*.2,t,1);DO.frequency.setTargetAtTime(a[3]/2,t,1.5);
+  PO[0].frequency.setTargetAtTime(a[3],t,1.5);PO[1].frequency.setTargetAtTime(a[3]*a[4],t,1.5);PO[2].frequency.setTargetAtTime(a[3]*1.5,t,1.5);
+  PG.gain.setTargetAtTime(a[5],t,1.5);PF.frequency.setTargetAtTime(Math.min(a[2],900)+200,t,1.5);
+}
+function tick(){
+  setTimeout(tick,350+Math.random()*900);if(!AC||muted)return;
+  const a=AMB[AR]||DEF,t=AC.currentTime+.02;
+  if(Math.random()<a[0]*.9)T('sine',rnd(1400,4000),500,t,.05,rnd(.015,.04));
+  if(Math.random()<a[6]*.05)thunder(t);
+  const w=W[AR]||0; /* half-heard murmurs and a faint ringing in the heaviest rooms */
+  if(w>=.6&&Math.random()<.1){const f=rnd(450,800);N(f,'bandpass',t,rnd(.7,1.3),.028,f*rnd(1.4,2.2));N(f*2.1,'bandpass',t+.05,rnd(.6,1.1),.02,f*3);}
+  if(w>=.5&&a[0]<.5&&Math.random()<.025){N(300,'lowpass',t,.2,.25);T('sine',130,55,t,.25,.3);N(300,'lowpass',t+.35,.2,.18);T('sine',120,50,t+.35,.25,.2);} /* a knock somewhere in the house */
+  if(w>.85&&Math.random()<.04)T('sine',4200,4150,t,3,.012);
+}
+
+/* ---------------- lighting ---------------- */
+/* x,y = light position (%), c = colour, k = intensity per beat, f = flicker */
+const LT=[
+{x:50,y:34,c:'255,248,235',k:[0,1.3,.25,.2],f:.08},{x:24,y:30,c:'120,150,190',k:[.5,.5,.7,.25]},
+{x:62,y:50,c:'255,200,120',k:[.45,.6,.9,.6]},{x:50,y:36,c:'255,190,110',k:[.6,.75,.9,.35],f:.05},
+{x:68,y:45,c:'255,200,130',k:[.3,.5,.9],f:.05},{x:60,y:46,c:'150,175,210',k:[.45,.45,.12,.45],f:.12},
+{x:82,y:48,c:'255,190,120',k:[.5,.3,.08]},{x:81,y:27,c:'255,214,140',k:[1.2,1.2,0,1]},
+{x:50,y:38,c:'170,190,220',k:[.6]},{x:50,y:22,c:'190,205,225',k:[.5,.5,.25,.5]},
+{x:23,y:34,c:'255,200,110',k:[.9,.25,.5,.6],f:.06},{x:16,y:28,c:'90,120,170',k:[0,.25,.5],f:.1},
+{x:25,y:45,c:'255,200,120',k:[1]},{x:50,y:44,c:'255,205,140',k:[.55,.55,.35]},
+{x:50,y:50,c:'110,140,200',k:[0,.5,.35,0],f:.15}];
+let FG=0;const lightEl=document.getElementById('light'),lid1=document.getElementById('lid1'),lid2=document.getElementById('lid2');
+function mountLight(){
+  const sv=sceneVisual.querySelector('svg'); if(!sv) return;
+  const bg=sv.querySelector('rect');
+  sv.insertAdjacentHTML('beforeend',TXT);
+  if(bg) bg.insertAdjacentHTML('afterend','<defs>'+GR+'<linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient><linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity=".05"/></linearGradient><filter id="sh" x="-25%" y="-25%" width="150%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="9" result="s0"/><feOffset id="so" in="s0" dy="10" result="s1"/><feComponentTransfer in="s1" result="s2"><feFuncA type="linear" slope=".65"/></feComponentTransfer><feGaussianBlur in="SourceAlpha" stdDeviation="3" result="b"/><feSpecularLighting id="sl" in="b" surfaceScale="4" specularConstant=".6" specularExponent="20" lighting-color="#ffe6b8" result="sp"><fePointLight id="pl" x="400" y="100" z="120"/></feSpecularLighting><feComposite in="sp" in2="SourceAlpha" operator="in" result="sp2"/><feMerge><feMergeNode in="s2"/><feMergeNode in="SourceGraphic"/><feMergeNode in="sp2"/></feMerge></filter></defs><rect width="800" height="450" fill="url(#wl)"/><rect y="320" width="800" height="130" fill="url(#fl)"/>');
+  sv.querySelectorAll('[data-sh]').forEach(e=>e.setAttribute('filter','url(#sh)'));
+  sv.insertAdjacentHTML('beforeend','<defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop id="rg0" offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter></defs><polygon id="ray" fill="url(#rg)" filter="url(#bl)" style="mix-blend-mode:screen" opacity="0"/>');
+  sv.insertAdjacentHTML('beforeend','<defs><radialGradient id="lg" gradientUnits="userSpaceOnUse" r="480"><stop offset=".2" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#04060c" stop-opacity=".78"/></radialGradient></defs><rect id="lr" width="800" height="450" fill="url(#lg)" style="mix-blend-mode:multiply"/>');
+}
+let LP={x:50,y:40,k:0,c:[180,190,210]},LTG=null,LAST=0,fpsN=0,fpsT=0,LITE=false;
+function cool(c,w){const a=c.split(',').map(Number),g=[150,165,185];return a.map((v,i)=>v+(g[i]-v)*w*.5);} /* heavier = colder, greyer light */
+function tweenLight(dt){
+  if(!LTG)return;const f=1-Math.exp(-dt/380);let ch=0;
+  ['x','y','k'].forEach(p=>{const d=LTG[p]-LP[p];LP[p]+=d*f;ch+=Math.abs(d);});
+  for(let i=0;i<3;i++){const d=LTG.c[i]-LP.c[i];LP.c[i]+=d*f;ch+=Math.abs(d)/255;}
+  if(ch>.004){const c=LP.c.map(Math.round).join(',');lightEl.style.background=`radial-gradient(ellipse 55% 65% at ${LP.x.toFixed(1)}% ${LP.y.toFixed(1)}%, rgba(${c},${(.42*LP.k).toFixed(3)}) 0, rgba(${c},${(.14*LP.k).toFixed(3)}) 42%, transparent 72%)`;}
+}
+function stripHeavy(sv){if(!sv)return;sv.querySelectorAll('[filter]').forEach(e=>{if(e.hasAttribute('data-sh'))e.removeAttribute('filter');else e.remove();});}
+function goLite(){LITE=true;document.body.classList.add('lite');drops.length=Math.min(drops.length,70);stripHeavy(sceneVisual.querySelector('svg'));} /* slow device: drop the costly filters */
+function setLight(){
+  const L=LT[currentRoom]||{x:50,y:40,c:'180,190,210',k:[.3]};
+  const w=W[currentRoom]||0,k=L.k[Math.min(beatIndex,L.k.length-1)]*(1-w*.25); /* flatter, dimmer light */
+  overlay.style.setProperty('--w',w);
+  const cc=cool(L.c,w).map(Math.round).join(',');LTG={x:L.x,y:L.y,k:k,c:cool(L.c,w)};
+  const g=sceneVisual.querySelector('#lg'), r=sceneVisual.querySelector('#lr');
+  const X=L.x*8,Y=L.y*4.5,ray=sceneVisual.querySelector('#ray'),pl=sceneVisual.querySelector('#pl'),sl=sceneVisual.querySelector('#sl');
+  if(ray){ray.setAttribute('points',`${X-16},${Y} ${X+16},${Y} ${X+190},450 ${X-190},450`);ray.setAttribute('opacity',Math.min(.55,k*.4)*(1-w*.6));sceneVisual.querySelector('#rg0').setAttribute('stop-color',`rgb(${cc})`);}
+  const so=sceneVisual.querySelector('#so');if(so){so.setAttribute('dx',Math.max(-30,Math.min(30,(400-X)/12)));so.setAttribute('dy',8+Math.abs(Y-225)/20);}
+  if(pl){pl.setAttribute('x',X);pl.setAttribute('y',Y);}
+  if(sl){sl.setAttribute('lighting-color',`rgb(${cc})`);sl.setAttribute('specularConstant',Math.min(1,k*.9)*(1-w*.7));}
+  if(g){g.setAttribute('cx',X);g.setAttribute('cy',Y);}
+  if(r) r.style.opacity=Math.max(.35,1.05-Math.min(k,1)*.55);
+}
+const dust=document.getElementById('dust'),dc=dust.getContext('2d');
+const PT=Array.from({length:45},()=>({x:Math.random(),y:Math.random(),r:.6+Math.random()*1.6,vx:(Math.random()-.5)*.00012,vy:-.00006-Math.random()*.0001,p:Math.random()*6}));
+function drawDust(t){
+  if(RM||LITE||!overlay.classList.contains('active')) return;
+  if(dust.width!==innerWidth){dust.width=innerWidth;dust.height=innerHeight;}
+  const L=LT[currentRoom]||{x:50,y:40,c:'200,200,200'};
+  dc.clearRect(0,0,dust.width,dust.height);
+  PT.forEach(q=>{q.x+=q.vx*16;q.y+=q.vy*16;if(q.y<0)q.y=1;if(q.x<0)q.x=1;if(q.x>1)q.x=0;
+    const d=Math.hypot(q.x*100-L.x,(q.y*100-L.y)*.7),a=Math.max(0,.55-d/60)*(.6+.4*Math.sin(t/900+q.p));
+    dc.fillStyle=`rgba(${L.c},${a})`;dc.beginPath();dc.arc(q.x*dust.width,q.y*dust.height,q.r,0,6.3);dc.fill();});
+}
+function flickerLoop(t){
+  const dt=Math.min(100,t-LAST);LAST=t;
+  if(!LITE){fpsN++;if(t-fpsT>2500){const fps=fpsN*1000/(t-fpsT);fpsN=0;fpsT=t;if(t>5000&&fps<38&&overlay.classList.contains('active'))goLite();}}
+  tweenLight(dt);
+  const L=LT[currentRoom];
+  lightEl.style.opacity=(1-.05*Math.sin(t/1100))*((!RM&&L&&L.f)?1-L.f*Math.abs(Math.sin(t/90)*Math.sin(t/37+1)):1)*(((W[currentRoom]||0)>.6&&!RM&&t%9000<320)?.5:1); /* power dips in heavy rooms */
+  if(overlay.classList.contains('active')&&!RM){ /* heavy eyelids, slow blink, drifting focus */
+    const w=W[currentRoom]||0,ph=(t%11000)/11000,bl=ph<.18?Math.sin(ph/.18*Math.PI):0;
+    lid1.style.height=lid2.style.height=(w*7+bl*w*32+Math.sin(t/4000)*w*1.5)+'%';
+    if(t-FG>300){FG=t;overlay.style.setProperty('--fog',(w*1.3*(.5+.5*Math.sin(t/2600))).toFixed(1));}}
+  drawDust(t);
+  requestAnimationFrame(flickerLoop);
+}
+overlay_pointer: {
+  const ov=document.getElementById('scene-overlay');
+  ov.addEventListener('pointermove',e=>{ if(RM) return;
+    document.getElementById('scene-visual').style.transform=`translate(${(e.clientX/innerWidth-.5)*-14}px,${(e.clientY/innerHeight-.5)*-8}px)`;});
+}
+
+
+
+function openRoom(i){
+  currentRoom = i; beatIndex = 0;
+  setLabel();
+  sceneVisual.innerHTML = roomVisuals[i] || ''; mountLight(); if(LITE)stripHeavy(sceneVisual.querySelector('svg')); echoOrb();
+  overlay.classList.add('active'); audioInit(); setAmb(i);
+  showBeat();
+}
+function updateVisual(){
+  sceneVisual.querySelectorAll('[data-show]').forEach(g=>{
+    const list = g.dataset.show.split(',').map(Number);
+    g.style.opacity = list.includes(beatIndex) ? 1 : 0;
+  });
+}
+function showBeat(){
+  const room = rooms[currentRoom];
+  const beat = BT(currentRoom,beatIndex);
+  sceneBeat.classList.remove('visible');
+  updateVisual(); setLight(); sfxPlay();
+  document.getElementById('dots').innerHTML=room.beats.map((_,i)=>`<i class="${i<=beatIndex?'on':''}"></i>`).join('');
+  sceneBeat.style.transitionDuration=(1+(W[currentRoom]||0)*1.6)+'s'; /* words surface slowly when it is heavy */
+  setTimeout(()=>{
+    sceneBeat.innerHTML = `<span class="stage">${beat.stage}</span>${beat.sfx ? `<span class="sfx">${beat.sfx}</span>` : ''}`;
+    sceneBeat.classList.add('visible');
+  }, 200);
+  if(beat.flash){
+    setTimeout(()=>{ flashEl.classList.add('on'); overlay.classList.add('fx'); setTimeout(()=>overlay.classList.remove('fx'),600); setTimeout(()=>flashEl.classList.remove('on'),90); }, 190);
+  }
+  sceneNext.textContent = (beatIndex === room.beats.length-1) ? S('bk') : S('nx');
+}
+sceneNext.onclick = () => {
+  const room = rooms[currentRoom];
+  if(beatIndex < room.beats.length-1){
+    beatIndex++;
+    showBeat();
+  } else {
+    closeRoom(true);
+  }
+};
+sceneReturn.addEventListener('pointerdown',()=>{killSfx();hardMute();});
+sceneReturn.onclick = () => closeRoom(false);
+
+function closeRoom(completed){
+  killSfx(); hardMute(); overlay.classList.remove('active');
+  if(completed){
+    const item = roomList.querySelector(`[data-index="${currentRoom}"]`);
+    item.classList.add('done');
+    item.querySelector('.mark').textContent = '✓'; depthUpdate();
+    if(currentRoom === rooms.length-1){
+      setTimeout(playEnding, 500);
+      return;
+    }
+  }
+  document.getElementById('rooms').scrollIntoView({behavior:'smooth'});
+}
+
+const roomList = document.getElementById('room-list');
+rooms.forEach((r, i)=>{
+  const li = document.createElement('li');
+  li.className = 'room-item';
+  li.dataset.index = i;
+  li.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span><span class="name">${RT(i)}</span><span class="mark"></span>`;
+  li.onclick = () => openRoom(i);
+  roomList.appendChild(li);
+});
+
+/* ---------------- replay: echoes, deep mode, tutorial, FAQ ---------------- */
+let ST={found:[],deep:false,unlocked:false,tut:0,last:0};
+try{Object.assign(ST,JSON.parse(localStorage.getItem('dep_state')||'{}'));}catch(e){}
+const saveST=()=>{try{localStorage.setItem('dep_state',JSON.stringify(ST));}catch(e){}};
+const W0=W.slice();
+roomList.querySelectorAll('.room-item').forEach(li=>li.style.setProperty('--w',W0[+li.dataset.index]||0)); /* heaviness bar under each room */
+function applyDeep(){W.forEach((_,i)=>{W[i]=Math.min(1,W0[i]*(ST.deep?1.25:1));});}
+const deepBtn=document.createElement('button');deepBtn.id='deep-btn';deepBtn.className='btn';deepBtn.style.display='none';roomList.after(deepBtn);
+function deepTxt(){deepBtn.textContent=`${S('deep')}: ${ST.deep?S('on'):S('off')}`;deepBtn.style.display=ST.unlocked?'':'none';}
+deepBtn.onclick=()=>{ST.deep=!ST.deep;saveST();applyDeep();deepTxt();};
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200);}
+function echoOrb(){
+  const sv=sceneVisual.querySelector('svg'),i=currentRoom;if(!sv||ST.found.includes(i))return;
+  const x=rnd(70,730)|0,y=rnd(90,320)|0;
+  sv.insertAdjacentHTML('beforeend',`<g id="echo" style="cursor:pointer;pointer-events:auto"><circle cx="${x}" cy="${y}" r="30" fill="transparent"/><circle cx="${x}" cy="${y}" r="14" fill="#ffe6b8" opacity=".08"/><circle cx="${x}" cy="${y}" r="4" fill="#ffe6b8" opacity=".5"><animate attributeName="opacity" values=".15;.75;.15" dur="3.2s" repeatCount="indefinite"/></circle></g>`);
+  sv.querySelector('#echo').addEventListener('click',e=>{e.stopPropagation();foundEcho(i);});
+}
+function foundEcho(i){
+  if(ST.found.includes(i))return;ST.found.push(i);saveST();
+  const li=roomList.querySelector(`[data-index="${i}"]`);if(li)li.classList.add('found');
+  const e=sceneVisual.querySelector('#echo');if(e)e.remove();
+  if(AC&&!muted){const t=AC.currentTime+.01;[880,1318,1760].forEach((f,k)=>T('sine',f,f*.998,t+k*.09,1.6,.08));}
+  toast(`${S('found')} ✦ ${ST.found.length}/15`);
+}
+function openModal(k){
+  const m=document.getElementById('modal');document.getElementById('m-t').textContent=S(k==='tu'?'tuT':'fqT');
+  document.getElementById('m-b').innerHTML=k==='tu'?'<ol>'+S('tu').map(x=>`<li>${x}</li>`).join('')+'</ol>':S('fq').map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('');
+  document.getElementById('m-x').textContent=S('cl');m.dataset.k=k;m.classList.add('on');
+}
+document.getElementById('m-x').onclick=()=>{document.getElementById('modal').classList.remove('on');ST.tut=1;saveST();};
+document.getElementById('tut-btn').onclick=()=>openModal('tu');
+document.getElementById('faq-btn').onclick=()=>openModal('fq');
+document.getElementById('copy').textContent=COPY;
+ST.found.forEach(i=>{const li=roomList.querySelector(`[data-index="${i}"]`);if(li)li.classList.add('found');});
+applyDeep();
+if(!ST.tut&&window.IntersectionObserver)new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){o.disconnect();setTimeout(()=>openModal('tu'),900);}},{threshold:.4}).observe(document.getElementById('rooms'));
+
+/* ---------------- controls + depth progression ---------------- */
+function depthUpdate(){const d=document.querySelectorAll('.room-item.done').length/15;document.body.style.setProperty('--dp',d);DEF[0]=.4+d*.5;DEF[5]=.05+d*.04;} /* the more rooms you finish, the darker and wetter the menu gets */
+addEventListener('keydown',e=>{
+  if(!overlay.classList.contains('active')||document.getElementById('modal').classList.contains('on'))return;
+  if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();sceneNext.click();}
+  if(e.key==='Escape')sceneReturn.click();
+});
+overlay.addEventListener('click',e=>{if(e.target.closest('button,#echo'))return;sceneNext.click();}); /* tap anywhere to continue */
+
+['click','touchend','keydown'].forEach(ev=>addEventListener(ev,()=>{audioInit();},{passive:true}));
+document.addEventListener('visibilitychange',()=>{if(!AC)return;try{const p=document.hidden?AC.suspend():AC.resume();if(p&&p.catch)p.catch(()=>{});}catch(e){}});
+addEventListener('blur',()=>{try{holdEnd(false);}catch(e){}});
+
+/* ---------------- start-screen hook: rotating lines + press-and-hold to enter ---------------- */
+let hi=0;const hk=document.getElementById('hook');
+function hookShow(){hk.style.opacity=0;setTimeout(()=>{hk.textContent=HK[lang][hi++%3];hk.style.opacity=1;},900);}
+setInterval(hookShow,5200);hookShow();
+const sb=document.getElementById('start-btn');let hold=null;
+function holdStart(e){
+  try{sb.setPointerCapture(e.pointerId);}catch(x){}
+  if(hold)return;audioInit();setAmb(-1);const t0=performance.now();document.body.classList.add('holding');
+  if(AC&&!muted)T('sine',38,72,AC.currentTime+.02,1.5,.35);
+  const hb=setInterval(()=>{if(AC&&!muted)heart(AC.currentTime+.02,.4);},750);
+  const step=n=>{const p=Math.min(1,(n-t0)/1500);sb.style.setProperty('--p',p);if(p>=1){holdEnd(true);return;}hold.raf=requestAnimationFrame(step);};
+  hold={hb};hold.raf=requestAnimationFrame(step);
+}
+function holdEnd(done){
+  if(!hold)return;clearInterval(hold.hb);cancelAnimationFrame(hold.raf);hold=null;
+  document.body.classList.remove('holding');sb.style.setProperty('--p',0);if(done)sb.click();
+}
+sb.addEventListener('pointerdown',holdStart);
+['pointerup','pointercancel','pointerleave'].forEach(ev=>sb.addEventListener(ev,()=>holdEnd(false)));
+let lastStart=0;
+sb.addEventListener('click',e=>{const n=Date.now();if(n-lastStart<900){e.stopImmediatePropagation();e.preventDefault();return;}lastStart=n;},true);
+sb.addEventListener('contextmenu',e=>e.preventDefault()); /* long-press must not open the phone menu; a plain tap still starts */
+
+/* ---------------- ending ---------------- */
+function playEnding(){
+  const end=document.getElementById('ending');
+  end.classList.remove('hidden'); end.scrollIntoView({behavior:'smooth'});
+  const t=document.getElementById('ending-text'), cr=document.getElementById('ending-credits'), help=document.getElementById('help-box');
+  ST.last=ST.found.length;ST.unlocked=true;fillEnd();ST.found=[];saveST();document.querySelectorAll('.room-item.found').forEach(x=>x.classList.remove('found'));deepTxt();
+  t.style.opacity=0; setTimeout(()=>t.style.transition='opacity 1.6s',50); setTimeout(()=>t.style.opacity=1,200);
+  setTimeout(()=>{cr.style.transition='opacity 1.4s';cr.style.opacity=1;},2200);
+  setTimeout(()=>{help.style.transition='opacity 1.4s';help.style.opacity=1;},3800);
+}
+
+/* ---------------- init ---------------- */
+let saved=null; try{saved=localStorage.getItem('lang');}catch(e){}
+applyLang(saved||(navigator.language||'en').slice(0,2).toLowerCase());
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+document.getElementById('mute').classList.toggle('off',muted);
+document.getElementById('mute').onclick=()=>{audioInit();muted=!muted;try{localStorage.setItem('mute',muted?'1':'0');}catch(e){}
+  if(MG)MG.gain.setTargetAtTime(muted?0:.7,AC.currentTime,.1);document.getElementById('mute').classList.toggle('off',muted);};
+setTimeout(function ghostLoop(){
+  setTimeout(ghostLoop,rnd(14000,32000)/(ST.deep?2:1));
+  if(!overlay.classList.contains('active')||RM||(W[currentRoom]||0)<.6)return;
+  const g=document.getElementById('ghost');g.style.left=(Math.random()<.5?rnd(3,14):rnd(80,92))+'%';g.style.opacity=.6;
+  if(AC&&!muted){const t=AC.currentTime+.01;T('sine',90,50,t,.5,.3);N(1200,'lowpass',t,.4,.1,200);}
+  setTimeout(()=>g.style.opacity=0,rnd(110,200));
+},rnd(14000,32000));
+requestAnimationFrame(flickerLoop);
+</script>
+</body>
+</html>
